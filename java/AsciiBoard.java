@@ -46,7 +46,7 @@ public class AsciiBoard {
     if (cell==Board.EMPTY) return ' ';
     if (cell.isBonus()) return 'B';
     if (cell.isKey()) return 'K';
-    return ' ';
+    return '*';
   }
 
   public static void main(String[] args) throws Exception {
@@ -58,6 +58,8 @@ public class AsciiBoard {
       .setCard(1, Card.path(false, false, true, true))
       .setCard(9, Card.path(true, true, true, true))
       .setCard(10, Card.path(true, true, true, true))
+      .setCard(2, Card.path(false, true, true, false))
+      .setCard(3, Card.path(false, true, false, true))
       ;
     AsciiBoard.draw(board, System.out);
     System.out.flush();

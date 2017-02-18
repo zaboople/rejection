@@ -1,4 +1,6 @@
+/** Immutable */
 public final class Card {
+
   public static Card strike() {
     return new Card(true, false, false, false, false);
   }
@@ -6,8 +8,8 @@ public final class Card {
     return new Card(false, up, right, down, left);
   }
 
-  private boolean up, down, left, right;
-  private boolean strike;
+  private final boolean up, down, left, right;
+  private final boolean strike;
   private Card(boolean strike, boolean up, boolean right, boolean down, boolean left) {
     if (strike && (up || down || right || left))
       throw new IllegalArgumentException("Cannot be both strike & path");
@@ -26,9 +28,21 @@ public final class Card {
   public boolean isPathUp() {return up;}
   public boolean isPathDown() {return down;}
 
-  public static void main(String[] args) {
-    System.out.println("|");
-    System.out.println("+");
-    System.out.println("|");
+  // DEBUGGING: //
+
+  private String string=null;
+  public String toString() {
+    if (string==null) string=makeString();
+    return string;
   }
+  private String makeString() {
+    if (isStrike()) return "S";
+    StringBuilder sb=new StringBuilder();
+    if (isPathUp()) sb.append("U");
+    if (isPathDown()) sb.append("D");
+    if (isPathLeft()) sb.append("L");
+    if (isPathRight()) sb.append("R");
+    return sb.toString();
+  }
+
 }
