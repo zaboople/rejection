@@ -1,3 +1,7 @@
+package main;
+
+import java.security.SecureRandom;
+
 public class Board {
   public final static int STD_WIDTH=8;
   public final static int STD_HEIGHT=8;
@@ -16,13 +20,20 @@ public class Board {
     clear();
   }
 
-
   public Board clear() {
     for (int i=0; i<cells.length; i++)
       if (this.cells[i]!=EMPTY) // Silly maybe-optimization
         this.cells[i]=EMPTY;
     return this;
   }
+
+  public Board init() {
+    RandomNoRepeat random=new RandomNoRepeat(cells.length);
+    setKeys(random.next(), random.next(), random.next());
+    setBonus(random.next(), random.next());
+    return this;
+  }
+
   public Board setKeys(int... cellIndices) {
     if (cellIndices.length != 3) throw new IllegalArgumentException("Only 3 keys");
     for (int index: cellIndices)
@@ -50,25 +61,4 @@ public class Board {
   public int getHeight() {return height;}
   public Cell getCell(int i) {return cells[i];}
 
-  public static class Cell {
-    boolean key, bonus;
-    Card card;
-    public static Cell key() {return new Cell(true, false);}
-    public static Cell bonus() {return new Cell(false, true);}
-    public static Cell empty() {return new Cell(false, false);}
-    private Cell(boolean key, boolean bonus) {
-      if (key && bonus) throw new IllegalArgumentException("Cannot be both key & bonus");
-      this.key=key;
-      this.bonus=bonus;
-    }
-    public boolean isKey() {return key;}
-    public boolean isBonus() {return bonus;}
-    public boolean isCard() {return card!=null;}
-    public Card getCard() {return card;}
-    public Cell fromCard(Card card) {
-      Cell cell=new Cell(key, bonus);
-      cell.card=card;
-      return cell;
-    }
-  }
 }

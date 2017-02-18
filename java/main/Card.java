@@ -1,3 +1,5 @@
+package main;
+
 /** Immutable */
 public final class Card {
 

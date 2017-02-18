@@ -1,5 +1,5 @@
 #!/bin/bash
 rm -rf build
 mkdir -p build
-javac -d build java/*.java
-java -classpath build DeckTest 2  5 5 5 5 5 5  3 3 3 3  2
+find java -type f | xargs javac -d build
+java -classpath build test.AsciiBoardTest "$@"

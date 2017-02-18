@@ -1,3 +1,5 @@
+package main;
+
 import java.util.function.Function;
 public class AsciiBoard {
 
@@ -16,7 +18,7 @@ public class AsciiBoard {
     }
   }
 
-  private static void doInnerLine(Appendable app, int innerLine, Board.Cell cell) throws Exception {
+  private static void doInnerLine(Appendable app, int innerLine, Cell cell) throws Exception {
     switch (innerLine) {
       case 0:
         app.append(' ')
@@ -36,32 +38,17 @@ public class AsciiBoard {
   }
 
 
-  private static String getEdge(Board.Cell cell, Function<Card, Boolean> checker, String ifSo, String ifNot) {
+  private static String getEdge(Cell cell, Function<Card, Boolean> checker, String ifSo, String ifNot) {
     if (cell==Board.EMPTY) return ifNot;
     if (!cell.isCard()) return ifNot;
     if (!checker.apply(cell.getCard())) return ifNot;
     return ifSo;
   }
-  private static char getCenter(Board.Cell cell) {
+  private static char getCenter(Cell cell) {
     if (cell==Board.EMPTY) return ' ';
     if (cell.isBonus()) return 'B';
     if (cell.isKey()) return 'K';
     return '*';
   }
 
-  public static void main(String[] args) throws Exception {
-    Board board=new Board();
-    board.setKeys(12, 13, 9);
-    board.setBonus(45, 20);
-    board
-      .setCard(0, Card.path(true, true, false, false))
-      .setCard(1, Card.path(false, false, true, true))
-      .setCard(9, Card.path(true, true, true, true))
-      .setCard(10, Card.path(true, true, true, true))
-      .setCard(2, Card.path(false, true, true, false))
-      .setCard(3, Card.path(false, true, false, true))
-      ;
-    AsciiBoard.draw(board, System.out);
-    System.out.flush();
-  }
 }

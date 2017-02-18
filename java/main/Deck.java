@@ -1,3 +1,5 @@
+package main;
+
 import java.security.SecureRandom;
 import java.util.Arrays;
 
@@ -5,7 +7,7 @@ public class Deck {
 
   private static final boolean TT=true, __=false;
 
-  final static Card[] possible={
+  public final static Card[] possible={
     Card.strike(),
     // 2's:
     Card.path(TT, TT, __, __),
