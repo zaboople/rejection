@@ -1,5 +1,4 @@
 #!/bin/bash
-rm -rf build
-mkdir -p build
-find java -type f | xargs javac -d build
-java -classpath build test.AsciiBoardTest "$@"
+cd $(dirname $0)
+build.sh || exit 1
+java -classpath build "$@"

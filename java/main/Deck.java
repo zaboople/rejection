@@ -9,28 +9,17 @@ public class Deck {
 
   public final static Card[] possible={
     Card.strike(),
-    // 2's:
-    Card.path(TT, TT, __, __),
-    Card.path(__, TT, TT, __),
-    Card.path(__, __, TT, TT),
-
-    Card.path(TT, __, __, TT),
-    Card.path(TT, __, TT, __),
-    Card.path(__, TT, __, TT),
-    // 3's:
-    Card.path(__, TT, TT, TT),
-    Card.path(TT, __, TT, TT),
-    Card.path(TT, TT, __, TT),
-    Card.path(TT, TT, TT, __),
-    // 4:
-    Card.path(TT, TT, TT, TT)
+    Card.pathCorner(),
+    Card.pathBar(),
+    Card.pathTee(),
+    Card.pathCross()
   };
 
   private final Card[] cards;
   private int cardIndex=0;
 
   /**
-   * Accepts an array of distributions per card type. There are exactly 7 kinds of card,
+   * Accepts an array of distributions per card type. There are exactly 5 kinds of card,
    * so the array should be that size. There will be that many cards per type, randomly
    * shuffled into this deck.
    * <br>
@@ -52,16 +41,14 @@ public class Deck {
           rawCards[allocIndex++]=possible[d];
     }
 
-    // Allocate those cards randomly to our actual array. This
-    // is not hugely performant (n log n ?), but it seems secure:
-    for (int waiting=cards.length; waiting>0; waiting--) {
-      int select=-1;
-      int countdown=randomizer.nextInt(waiting);
-      for (int rc=0; select==-1; rc++)
-        if (rawCards[rc]!=null && --countdown == -1)
-          select=rc;
-      cards[waiting-1]=rawCards[select];
-      rawCards[select]=null;
+    // Allocate those cards randomly:
+    RandomNoRepeat
+      fromRandom=new RandomNoRepeat(randomizer, rawCards.length),
+      toRandom=new RandomNoRepeat(randomizer, cards.length);
+    for (int i=0; i<cards.length; i++){
+      int from=fromRandom.next();
+      cards[toRandom.next()]=rawCards[from];
+      rawCards[from]=null;
     }
 
     // Verification:

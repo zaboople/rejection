@@ -1,11 +1,13 @@
 package test;
 
-import main.*;
+import main.Card;
+import main.Deck;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.stream.Stream;
 import java.util.stream.IntStream;
+import java.security.SecureRandom;
 
 public class DeckTest {
   public static void main(String[] args) {
@@ -19,11 +21,11 @@ public class DeckTest {
     Map<String, Map<Integer,Integer>> cardMap=new HashMap<>();
     for (Card c: Deck.possible)
       cardMap.put(c.toString(), new HashMap<>());
-    IntStream.range(0, 10000).forEach(blahblah-> {
-      Deck deck=new Deck(distributions);
+    SecureRandom randomizer=new SecureRandom();
+    IntStream.range(0, 10000).forEach(__ -> {
+      Deck deck=new Deck(randomizer, distributions);
       for (int d=0; d<deck.size(); d++) {
-        String card=deck.next().toString();
-        Map<Integer, Integer> counts=cardMap.get(card);
+        Map<Integer, Integer> counts=cardMap.get(deck.next().toString());
         Integer c=counts.get(d);
         if (c==null) c=0;
         counts.put(d, c+1);

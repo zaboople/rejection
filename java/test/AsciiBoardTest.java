@@ -1,18 +1,17 @@
 package test;
-import main.*;
+import main.AsciiBoard;
+import main.Board;
+import main.Card;
 
 public class AsciiBoardTest {
   public static void main(String[] args) throws Exception {
     Board board=new Board();
-    board.setKeys(12, 13, 9);
-    board.setBonus(45, 20);
+    board.setCard(0, 0, Card.pathBar());
+    board.putRight(Card.pathCorner());
+    board.putDown(Card.pathCorner().rotate().rotate());
     board
-      .setCard(0, Card.path(true, true, false, false))
-      .setCard(1, Card.path(false, false, true, true))
-      .setCard(9, Card.path(true, true, true, true))
-      .setCard(10, Card.path(true, true, true, true))
-      .setCard(2, Card.path(false, true, true, false))
-      .setCard(3, Card.path(false, true, false, true))
+      .setCard(1, 2, Card.pathTee())
+      .setCard(2, 2, Card.pathCross())
       ;
     AsciiBoard.draw(board, System.out);
     System.out.flush();
