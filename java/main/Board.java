@@ -13,7 +13,7 @@ public class Board {
   private final Cell[] cells;
   private final int width, height;
   private int prev=-1;
-  private int current=0;
+  private int current=-1;
   private int[] keyCells;
   private int[] bonusCells;
 
@@ -39,6 +39,8 @@ public class Board {
     for (int i=0; i<cells.length; i++)
       if (this.cells[i]!=EMPTY) // Silly maybe-optimization
         this.cells[i]=EMPTY;
+    prev=-1;
+    current=-1;
     RandomNoRepeat random=new RandomNoRepeat(cells.length-2);
     setKeys(random.next(), random.next(), random.next());
     setBonus(random.next(), random.next());
@@ -87,6 +89,9 @@ public class Board {
   public boolean onFinish() {
     return current==cells.length-1;
   }
+  public boolean onStart() {
+    return current==-1;
+  }
   public boolean canPutUp() {
     if (current < width) return false;//On first row
     return getCard(current).hasPathUp() && getCard(current-width)==null;
@@ -104,29 +109,28 @@ public class Board {
     return getCard(current).hasPathRight() && getCard(current+1)==null;
   }
 
-  public boolean putUp(Card card) {
-    return putCard(card, current-width, this::canPutUp, Card::hasPathDown);
+  public void putUp(Card card) {
+    putCard(card, current-width, this::canPutUp, Card::hasPathDown);
   }
-  public boolean putDown(Card card) {
-    return putCard(card, current+width, this::canPutDown, Card::hasPathUp);
+  public void putDown(Card card) {
+    putCard(card, current+width, this::canPutDown, Card::hasPathUp);
   }
-  public boolean putLeft(Card card) {
-    return putCard(card, current-1, this::canPutLeft, Card::hasPathRight);
+  public void putLeft(Card card) {
+    putCard(card, current-1, this::canPutLeft, Card::hasPathRight);
   }
-  public boolean putRight(Card card) {
-    return putCard(card, current+1, this::canPutRight, Card::hasPathLeft);
+  public void putRight(Card card) {
+    putCard(card, current+1, this::canPutRight, Card::hasPathLeft);
   }
-  private boolean putCard(
+  private void putCard(
       Card card,
       int toPosition,
       Supplier<Boolean> checkCan,
       Function<Card, Boolean> rotateChecker
     ) {
-    if (!checkCan.get()) return false;
+    if (!checkCan.get()) throw new IllegalStateException("Not a legal card placement");;
     while (!rotateChecker.apply(card))
       card=card.rotate();
     setCard(toPosition, card);
-    return true;
   }
 
   public void rotateCard() {
@@ -169,5 +173,4 @@ public class Board {
       else
         cells[index+1]=Cell.bonus();
   }
-
 }
