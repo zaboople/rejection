@@ -3,8 +3,11 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-// Bug: Rotate hung on left-right bar
-// Bug: Rotate exploded on prev = 1 and current = 1
+/**
+ * Represents game state. Tries as much as possible to hide
+ * board state from game clients, although the board is still
+ * exposed for the sake of rendering.
+ */
 public class Game {
   private static final int STRIKE_LIMIT=3;
   private static final int KEY_COUNT=2;
@@ -28,9 +31,12 @@ public class Game {
   public Game(int bet) {
     this.bet=bet;
   }
+
+  /** Ideally this would be a read-only interface. */
   public Board getBoard() {
     return board;
   }
+
   public Card getUpCard() {
     if (upCard==null && state==CARD_UP)
       throw new IllegalStateException("Up card should not be null");
@@ -48,21 +54,21 @@ public class Game {
     }
   }
 
-  public boolean canPutUp() {return canPut(board::canPutUp);}
-  public boolean canPutDown() {return canPut(board::canPutDown);}
-  public boolean canPutLeft() {return canPut(board::canPutLeft);}
-  public boolean canPutRight() {return canPut(board::canPutRight);}
+  public boolean canPlayUp() {return canPlay(board::canPlayUp);}
+  public boolean canPlayDown() {return canPlay(board::canPlayDown);}
+  public boolean canPlayLeft() {return canPlay(board::canPlayLeft);}
+  public boolean canPlayRight() {return canPlay(board::canPlayRight);}
 
-  public void putUp() {put(board::putUp);}
-  public void putDown() {put(board::putDown);}
-  public void putLeft() {put(board::putLeft);}
-  public void putRight() {put(board::putRight);}
+  public void playUp() {play(board::playUp);}
+  public void playDown() {play(board::playDown);}
+  public void playLeft() {play(board::playLeft);}
+  public void playRight() {play(board::playRight);}
 
   public void rotateCard() {
     requireState(CARD_PLACED);
     board.rotateCard();
   }
-  public void finishPut() {
+  public void finishPlayCard() {
     requireState(CARD_PLACED);
     if (board.onKey())
       keys++;
@@ -72,7 +78,7 @@ public class Game {
     if (board.onFinish())
       state=keys==0 ?WON :LOST;
     else
-    if (!(board.canPutUp() || board.canPutDown() || board.canPutLeft() || board.canPutRight()))
+    if (!(board.canPlayUp() || board.canPlayDown() || board.canPlayLeft() || board.canPlayRight()))
       state=LOST;
     else
       state=WAITING;
@@ -87,22 +93,22 @@ public class Game {
     return this;
   }
 
-  public void putFirstCard() {
+  public void playFirstCard() {
     requireState(CARD_UP);
     if (!onFirstCard) throw new IllegalStateException("Not on very first");
-    board.setCard(0, upCard);
+    board.playFirstCard(upCard);
     onFirstCard=false;
     state=CARD_PLACED;
     upCard=null;
   }
 
-  private void put(Consumer<Card> f) {
+  private void play(Consumer<Card> f) {
     requireState(CARD_UP);
     f.accept(upCard);
     state=CARD_PLACED;
     upCard=null;
   }
-  private boolean canPut(Supplier<Boolean> f) {
+  private boolean canPlay(Supplier<Boolean> f) {
     if (onFirstCard) return false;
     requireState(CARD_UP);
     return f.get();
@@ -121,6 +127,10 @@ public class Game {
   public boolean isWon(){return state==WON;}
   public boolean isLost(){return state==LOST || state==GIVE_UP;}
   public int getStrikes() {return strikes;}
+  public Card getPlacedCard() {
+    requireState(CARD_PLACED);
+    return board.getCurrentCard();
+  }
 
   private void requireState(int shouldBe) {
     if (state!=shouldBe)

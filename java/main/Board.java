@@ -5,6 +5,10 @@ import java.awt.Point;
 import java.util.function.Supplier;
 import java.util.function.Function;
 
+/**
+ * Represents Board state; makes very little effort to enforce
+ * game rules.
+ */
 public class Board {
   public final static int STD_WIDTH=8;
   public final static int STD_HEIGHT=8;
@@ -55,8 +59,6 @@ public class Board {
   }
   public Board setCard(int index, Card card) {
     cells[index]=cells[index].fromCard(card);
-    prev=current;
-    current=index;
     return this;
   }
   public Card getCard(int row, int col) {
@@ -64,6 +66,9 @@ public class Board {
   }
   public Card getCard(int index) {
     return getCell(index).getCard();
+  }
+  public Card getCurrentCard() {
+    return getCard(current);
   }
   public Cell getCell(int row, int col) {return getCell(toIndex(row, col));}
   public Cell getCell(int i) {return cells[i];}
@@ -92,36 +97,40 @@ public class Board {
   public boolean onStart() {
     return current==-1;
   }
-  public boolean canPutUp() {
+  public boolean canPlayUp() {
     if (current < width) return false;//On first row
-    return getCard(current).hasPathUp() && getCard(current-width)==null;
+    return getCurrentCard().hasPathUp() && getCard(current-width)==null;
   }
-  public boolean canPutDown() {
+  public boolean canPlayDown() {
     if (current / width==height-1) return false;//On last row
-    return getCard(current).hasPathDown() && getCard(current+width)==null;
+    return getCurrentCard().hasPathDown() && getCard(current+width)==null;
   }
-  public boolean canPutLeft() {
+  public boolean canPlayLeft() {
     if (current % width==0) return false;//On first col
-    return getCard(current).hasPathLeft() && getCard(current-1)==null;
+    return getCurrentCard().hasPathLeft() && getCard(current-1)==null;
   }
-  public boolean canPutRight() {
+  public boolean canPlayRight() {
     if (current % width==width-1) return false;//On last col
-    return getCard(current).hasPathRight() && getCard(current+1)==null;
+    return getCurrentCard().hasPathRight() && getCard(current+1)==null;
   }
 
-  public void putUp(Card card) {
-    putCard(card, current-width, this::canPutUp, Card::hasPathDown);
+  public void playFirstCard(Card card) {
+    setCard(0, card);
+    current=0;
   }
-  public void putDown(Card card) {
-    putCard(card, current+width, this::canPutDown, Card::hasPathUp);
+  public void playUp(Card card) {
+    playCard(card, current-width, this::canPlayUp, Card::hasPathDown);
   }
-  public void putLeft(Card card) {
-    putCard(card, current-1, this::canPutLeft, Card::hasPathRight);
+  public void playDown(Card card) {
+    playCard(card, current+width, this::canPlayDown, Card::hasPathUp);
   }
-  public void putRight(Card card) {
-    putCard(card, current+1, this::canPutRight, Card::hasPathLeft);
+  public void playLeft(Card card) {
+    playCard(card, current-1, this::canPlayLeft, Card::hasPathRight);
   }
-  private void putCard(
+  public void playRight(Card card) {
+    playCard(card, current+1, this::canPlayRight, Card::hasPathLeft);
+  }
+  private void playCard(
       Card card,
       int toPosition,
       Supplier<Boolean> checkCan,
@@ -131,25 +140,27 @@ public class Board {
     while (!rotateChecker.apply(card))
       card=card.rotate();
     setCard(toPosition, card);
+    prev=current;
+    current=toPosition;
   }
 
   public void rotateCard() {
-    Card nowCard=getCard(current);
+    Card nowCard=getCurrentCard();
     Card newCard=nowCard.rotate();
     if (prev==-1){
     }
     else
     if (prev==current-1)
-      while (!newCard.hasPathLeft()) newCard.rotate();
+      while (!newCard.hasPathLeft()) newCard=newCard.rotate();
     else
     if (prev==current+1)
-      while (!newCard.hasPathRight()) newCard.rotate();
+      while (!newCard.hasPathRight()) newCard=newCard.rotate();
     else
     if (prev==current-width)
-      while (!newCard.hasPathUp()) newCard.rotate();
+      while (!newCard.hasPathUp()) newCard=newCard.rotate();
     else
     if (prev==current+width)
-      while (!newCard.hasPathDown()) newCard.rotate();
+      while (!newCard.hasPathDown()) newCard=newCard.rotate();
     else
       throw new IllegalStateException("Previous card "+prev+" doesn't seem to align to new "+current);
     setCard(newCard);

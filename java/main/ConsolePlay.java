@@ -43,25 +43,16 @@ public class ConsolePlay {
       else if (game.isCardUp()) {
         if (game.atVeryBeginning()){
           prompt("Press enter to play first card:", null);
-          game.putFirstCard();
+          game.playFirstCard();
         }
         else
           promptCardPut();
       }
       else if (game.isCardPlaced()) {
-        String error=null;
-        while (game.isCardPlaced()) {
-          String res=prompt("Enter R to rotate, or nothing to continue: ", error).toLowerCase();
-          if (res.length()==0)
-            game.finishPut();
-          else
-          if (res.toLowerCase().startsWith("r")){
-            game.rotateCard();
-            drawGame();
-          }
-          else
-            error = "Error: Invalid entry";
-        }
+        Card card=game.getPlacedCard();
+        if (card.isPathCorner() || card.isPathTee())
+          promptCardRotate();
+        game.finishPlayCard();
       }
     }
     if (game.isLost()) System.out.println("LOSE");
@@ -71,10 +62,10 @@ public class ConsolePlay {
 
   private void promptCardPut() throws Exception {
     boolean[] directions={
-      game.getBoard().canPutUp(),
-      game.getBoard().canPutDown(),
-      game.getBoard().canPutLeft(),
-      game.getBoard().canPutRight()
+      game.canPlayUp(),
+      game.canPlayDown(),
+      game.canPlayLeft(),
+      game.canPlayRight()
     };
     boolean placed=false;
     String error=null;
@@ -94,14 +85,29 @@ public class ConsolePlay {
         continue;
       }
       switch (index) {
-        case 0: game.putUp(); break;
-        case 1: game.putDown(); break;
-        case 2: game.putLeft(); break;
-        case 3: game.putRight(); break;
+        case 0: game.playUp(); break;
+        case 1: game.playDown(); break;
+        case 2: game.playLeft(); break;
+        case 3: game.playRight(); break;
       }
       placed=true;
     }
-
+  }
+  private void promptCardRotate() throws Exception {
+    String error=null;
+    boolean done=false;
+    while (!done) {
+      String res=prompt("Enter R to rotate, or nothing to continue: ", error).toLowerCase();
+      if (res.length()==0)
+        done=true;
+      else
+      if (res.toLowerCase().startsWith("r")){
+        game.rotateCard();
+        drawGame();
+      }
+      else
+        error = "Error: Invalid entry";
+    }
   }
 
   private String prompt(String p, String error) throws Exception {

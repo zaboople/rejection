@@ -1,5 +1,9 @@
 package main;
 
+/**
+ * Represents a (potentially empty) cell on the playing board.
+ * Cells are immutable.
+ */
 public class Cell {
   private final boolean key, bonus;
   private final Card card;

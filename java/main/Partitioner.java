@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-/** FIXME document */
+/** Currently not used for anything. Interesting idea though. */
 public class Partitioner {
   private final SecureRandom randomizer;
   private final int partitions[];

@@ -3,6 +3,10 @@ package main;
 import java.security.SecureRandom;
 import java.util.Arrays;
 
+/**
+ * Represents the deck of cards. Maintains an internal
+ * array of Card objects for the duration of use.
+ */
 public class Deck {
 
   private static final boolean TT=true, __=false;
