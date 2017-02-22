@@ -30,7 +30,7 @@ public class ConsolePlay {
   }
 
   private void play() throws Exception {
-    game=new Game(0);
+    game=new Game();
     while (!game.isOver()){
       if (game.isWaiting()){
         game.nextCard();

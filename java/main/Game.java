@@ -10,16 +10,6 @@ import java.security.SecureRandom;
  * exposed for the sake of rendering.
  */
 public class Game {
-  private static final int
-    BOARD_WIDTH=8,
-    BOARD_HEIGHT=8,
-    STRIKE_LIMIT=3,
-    KEY_COUNT=3,
-    BONUS_COUNT=3,
-    CARD_CORNER_COUNT=12,
-    CARD_BAR_COUNT=12,
-    CARD_TEE_COUNT=40,
-    CARD_CROSS_COUNT=30;
 
   private static final int
     WAITING=0,
@@ -30,21 +20,31 @@ public class Game {
     WON=5,
     GIVE_UP=6;
 
+  // Final variables:
   private final SecureRandom randomizer=new SecureRandom();
-  private final Board board=new Board(
-    randomizer, BOARD_WIDTH, BOARD_HEIGHT, KEY_COUNT, BONUS_COUNT
-  );
-  private final Deck deck=new Deck(
-    randomizer, STRIKE_LIMIT, CARD_CORNER_COUNT, CARD_BAR_COUNT, CARD_TEE_COUNT, CARD_CROSS_COUNT
-  );
-  private final int bet;
+  private final Board board;
+  private final Deck deck;
+  private final GameConfig config;
+
+  // Stateful variables:
   private Card upCard=null;
   private int state=WAITING;
   private boolean onFirstCard=true;
   private int strikes=0;
   private int keys=0;
-  public Game(int bet) {
-    this.bet=bet;
+
+  public Game() {
+    this(new GameConfig());
+  }
+  public Game(GameConfig c) {
+    this.config=c;
+    board=new Board(
+      randomizer, c.BOARD_WIDTH, c.BOARD_HEIGHT, c.KEY_COUNT, c.BONUS_COUNT
+    );
+    deck=new Deck(
+      randomizer, c.STRIKE_LIMIT,
+      c.CARD_CORNER_COUNT, c.CARD_BAR_COUNT, c.CARD_TEE_COUNT, c.CARD_CROSS_COUNT
+    );
   }
 
   /** Ideally this would be a read-only interface. */
@@ -63,16 +63,11 @@ public class Game {
     upCard=deck.next();
     if (upCard.isStrike()) {
       strikes++;
-      state=strikes==STRIKE_LIMIT ?LOST :WAITING_STRIKED;
+      state=strikes==config.STRIKE_LIMIT ?LOST :WAITING_STRIKED;
     } else {
       state=CARD_UP;
     }
   }
-
-  public boolean canPlayUp() {return canPlay(board::canPlayUp);}
-  public boolean canPlayDown() {return canPlay(board::canPlayDown);}
-  public boolean canPlayLeft() {return canPlay(board::canPlayLeft);}
-  public boolean canPlayRight() {return canPlay(board::canPlayRight);}
 
   public void playUp() {play(board::playUp);}
   public void playDown() {play(board::playDown);}
@@ -90,7 +85,7 @@ public class Game {
     else if (board.onBonus())
       strikes=strikes==0 ?0 :strikes-1;
     if (board.onFinish())
-      state=keys==KEY_COUNT ?WON :LOST;
+      state=keys==config.KEY_COUNT ?WON :LOST;
     else
     if (!(board.canPlayUp() || board.canPlayDown() || board.canPlayLeft() || board.canPlayRight()))
       state=LOST;
@@ -116,20 +111,12 @@ public class Game {
     upCard=null;
   }
 
-  private void play(Consumer<Card> f) {
-    requireState(CARD_UP);
-    f.accept(upCard);
-    state=CARD_PLACED;
-    upCard=null;
-  }
-  private boolean canPlay(Supplier<Boolean> f) {
-    if (onFirstCard) return false;
-    requireState(CARD_UP);
-    return f.get();
-  }
-
 
   public boolean atVeryBeginning() {return onFirstCard;}
+  public boolean canPlayUp() {return canPlay(board::canPlayUp);}
+  public boolean canPlayDown() {return canPlay(board::canPlayDown);}
+  public boolean canPlayLeft() {return canPlay(board::canPlayLeft);}
+  public boolean canPlayRight() {return canPlay(board::canPlayRight);}
   public boolean isOver() {
     return state==LOST || state==WON || state==GIVE_UP;
   }
@@ -146,6 +133,18 @@ public class Game {
     return board.getCurrentCard();
   }
 
+
+  private void play(Consumer<Card> f) {
+    requireState(CARD_UP);
+    f.accept(upCard);
+    state=CARD_PLACED;
+    upCard=null;
+  }
+  private boolean canPlay(Supplier<Boolean> f) {
+    if (onFirstCard) return false;
+    requireState(CARD_UP);
+    return f.get();
+  }
   private void requireState(int shouldBe) {
     if (state!=shouldBe)
       throw new IllegalStateException("State should be: "+shouldBe+"; is: "+state);
