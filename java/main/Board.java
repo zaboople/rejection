@@ -1,9 +1,9 @@
 package main;
 
-import java.security.SecureRandom;
 import java.awt.Point;
-import java.util.function.Supplier;
+import java.security.SecureRandom;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * Represents Board state; makes very little effort to enforce
@@ -12,6 +12,8 @@ import java.util.function.Function;
 public class Board {
   public final static int STD_WIDTH=8;
   public final static int STD_HEIGHT=8;
+  public final static int STD_KEYS=3;
+  public final static int STD_BONUSES=2;
   public final static Cell EMPTY=Cell.empty();
 
   private final Cell[] cells;
@@ -20,11 +22,13 @@ public class Board {
   private int current=-1;
   private int[] keyCells;
   private int[] bonusCells;
+  private final SecureRandom randomizer;
 
   public Board() {
-    this(STD_WIDTH, STD_HEIGHT);
+    this(new SecureRandom(), STD_WIDTH, STD_HEIGHT, STD_KEYS, STD_BONUSES);
   }
-  public Board(int width, int height) {
+  public Board(SecureRandom randomizer, int width, int height, int keys, int bonuses) {
+    this.randomizer=randomizer;
     this.width=width;
     this.height=height;
     this.cells=new Cell[width * height];
@@ -45,7 +49,7 @@ public class Board {
         this.cells[i]=EMPTY;
     prev=-1;
     current=-1;
-    RandomNoRepeat random=new RandomNoRepeat(cells.length-2);
+    RandomNoRepeat random=new RandomNoRepeat(randomizer, cells.length-2);
     setKeys(random.next(), random.next(), random.next());
     setBonus(random.next(), random.next());
     return this;

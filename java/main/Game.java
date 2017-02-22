@@ -2,6 +2,7 @@ package main;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.security.SecureRandom;
 
 /**
  * Represents game state. Tries as much as possible to hide
@@ -9,8 +10,17 @@ import java.util.function.Supplier;
  * exposed for the sake of rendering.
  */
 public class Game {
-  private static final int STRIKE_LIMIT=3;
-  private static final int KEY_COUNT=2;
+  private static final int
+    BOARD_WIDTH=8,
+    BOARD_HEIGHT=8,
+    STRIKE_LIMIT=3,
+    KEY_COUNT=3,
+    BONUS_COUNT=3,
+    CARD_CORNER_COUNT=12,
+    CARD_BAR_COUNT=12,
+    CARD_TEE_COUNT=40,
+    CARD_CROSS_COUNT=30;
+
   private static final int
     WAITING=0,
     WAITING_STRIKED=1,
@@ -20,8 +30,13 @@ public class Game {
     WON=5,
     GIVE_UP=6;
 
-  private final Board board=new Board();
-  private final Deck deck=new Deck(3, 21, 21, 21, 21);
+  private final SecureRandom randomizer=new SecureRandom();
+  private final Board board=new Board(
+    randomizer, BOARD_WIDTH, BOARD_HEIGHT, KEY_COUNT, BONUS_COUNT
+  );
+  private final Deck deck=new Deck(
+    randomizer, STRIKE_LIMIT, CARD_CORNER_COUNT, CARD_BAR_COUNT, CARD_TEE_COUNT, CARD_CROSS_COUNT
+  );
   private final int bet;
   private Card upCard=null;
   private int state=WAITING;
@@ -74,9 +89,8 @@ public class Game {
       keys++;
     else if (board.onBonus())
       strikes=strikes==0 ?0 :strikes-1;
-
     if (board.onFinish())
-      state=keys==0 ?WON :LOST;
+      state=keys==KEY_COUNT ?WON :LOST;
     else
     if (!(board.canPlayUp() || board.canPlayDown() || board.canPlayLeft() || board.canPlayRight()))
       state=LOST;
