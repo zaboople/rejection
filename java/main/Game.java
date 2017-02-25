@@ -69,10 +69,10 @@ public class Game {
     }
   }
 
-  public void playUp() {play(board::playUp);}
-  public void playDown() {play(board::playDown);}
-  public void playLeft() {play(board::playLeft);}
-  public void playRight() {play(board::playRight);}
+  public void playUp() {play(Dir.UP);}
+  public void playDown() {play(Dir.DOWN);}
+  public void playLeft() {play(Dir.LEFT);}
+  public void playRight() {play(Dir.RIGHT);}
 
   public void rotateCard() {
     requireState(CARD_PLACED);
@@ -87,7 +87,7 @@ public class Game {
     if (board.onFinish())
       state=keys==config.KEY_COUNT ?WON :LOST;
     else
-    if (!(board.canPlayUp() || board.canPlayDown() || board.canPlayLeft() || board.canPlayRight()))
+    if (board.whereCanIPlayTo()==0)
       state=LOST;
     else
       state=WAITING;
@@ -113,10 +113,10 @@ public class Game {
 
 
   public boolean atVeryBeginning() {return onFirstCard;}
-  public boolean canPlayUp() {return canPlay(board::canPlayUp);}
-  public boolean canPlayDown() {return canPlay(board::canPlayDown);}
-  public boolean canPlayLeft() {return canPlay(board::canPlayLeft);}
-  public boolean canPlayRight() {return canPlay(board::canPlayRight);}
+  public boolean canPlayUp() {return canPlay(Dir.UP);}
+  public boolean canPlayDown() {return canPlay(Dir.DOWN);}
+  public boolean canPlayLeft() {return canPlay(Dir.LEFT);}
+  public boolean canPlayRight() {return canPlay(Dir.RIGHT);}
   public boolean isOver() {
     return state==LOST || state==WON || state==GIVE_UP;
   }
@@ -134,18 +134,18 @@ public class Game {
   }
 
 
-  private void play(Consumer<Card> f) {
+  private void play(byte direction) {
     requireState(CARD_UP);
-    f.accept(upCard);
+    board.play(upCard, direction);
     state=board.onFinish()
       ?(keys==config.KEY_COUNT ?WON :LOST)
       :CARD_PLACED;
     upCard=null;
   }
-  private boolean canPlay(Supplier<Boolean> f) {
+  private boolean canPlay(byte direction) {
     if (onFirstCard) return false;
     requireState(CARD_UP);
-    return f.get();
+    return board.canPlay(direction);
   }
   private void requireState(int shouldBe) {
     if (state!=shouldBe)

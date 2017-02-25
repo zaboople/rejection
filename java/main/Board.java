@@ -15,8 +15,11 @@ public class Board {
   public final static int STD_KEYS=3;
   public final static int STD_BONUSES=2;
 
+
   private final Cell[] cells;
   private final int width, height;
+
+
   private int prev=-1;
   private int current=-1;
   private int[] keyCells;
@@ -100,53 +103,70 @@ public class Board {
   public boolean onStart() {
     return current==-1;
   }
-  public boolean canPlayUp() {
-    if (current < width) return false;//On first row
-    return getCurrentCard().hasPathUp() && getCard(current-width)==null;
+
+  public boolean canPlay(byte direction) {
+    return getTarget(direction) > 0;
   }
-  public boolean canPlayDown() {
-    if (current / width==height-1) return false;//On last row
-    return getCurrentCard().hasPathDown() && getCard(current+width)==null;
+  public byte whereCanIPlayTo() {
+    return (byte) (
+      canPlayTo(Dir.LEFT) |
+      canPlayTo(Dir.RIGHT)|
+      canPlayTo(Dir.UP)   |
+      canPlayTo(Dir.DOWN)
+    );
   }
-  public boolean canPlayLeft() {
-    if (current % width==0) return false;//On first col
-    return getCurrentCard().hasPathLeft() && getCard(current-1)==null;
+  private byte canPlayTo(byte direction) {
+    return getTarget(direction)>0 ?direction :(byte)0;
   }
-  public boolean canPlayRight() {
-    if (current % width==width-1) return false;//On last col
-    return getCurrentCard().hasPathRight() && getCard(current+1)==null;
+  private int getTarget(byte direction) {
+    int target;
+    boolean pastEdge;
+    switch (direction) {
+      case Dir.UP:
+        pastEdge=current < width; //Top row
+        target=current-width;
+        break;
+      case Dir.DOWN:
+        pastEdge=current / width==height-1; //Bottom row
+        target=current+width;
+        break;
+      case Dir.LEFT:
+        pastEdge=current % width==0; //First column
+        target=current-1;
+        break;
+      case Dir.RIGHT:
+        pastEdge=current % width==width-1; // Last column
+        target=current+1;
+        break;
+      default:
+        throw new IllegalArgumentException(""+direction);
+    }
+    return (
+        !pastEdge
+        &&
+        getCurrentCard().hasPath(direction)
+        &&
+        getCard(target)==null
+      )
+      ?target
+      :(byte)-1;
   }
 
   public void playFirstCard(Card card) {
     setCard(0, card);
     current=0;
   }
-  public void playUp(Card card) {
-    playCard(card, current-width, this::canPlayUp, Card::hasPathDown);
-  }
-  public void playDown(Card card) {
-    playCard(card, current+width, this::canPlayDown, Card::hasPathUp);
-  }
-  public void playLeft(Card card) {
-    playCard(card, current-1, this::canPlayLeft, Card::hasPathRight);
-  }
-  public void playRight(Card card) {
-    playCard(card, current+1, this::canPlayRight, Card::hasPathLeft);
-  }
-  private void playCard(
-      Card card,
-      int toPosition,
-      Supplier<Boolean> checkCan,
-      Function<Card, Boolean> rotateChecker
-    ) {
-    if (!checkCan.get()) throw new IllegalStateException("Not a legal card placement");;
-    while (!rotateChecker.apply(card))
+  public void play(Card card, final byte direction) {
+    int target=getTarget(direction);
+    if (target<1)
+      throw new IllegalStateException("Not a legal card placement");;
+    final byte reversed=Dir.OPPOSITES[direction];
+    while (!card.hasPath(reversed))
       card=card.rotate();
-    setCard(toPosition, card);
+    setCard(target, card);
     prev=current;
-    current=toPosition;
+    current=target;
   }
-
   public void rotateCard() {
     Card nowCard=getCurrentCard();
     Card newCard=nowCard.rotate();

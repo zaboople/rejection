@@ -3,37 +3,41 @@ package main;
 /** Immutable */
 public final class Card {
   private final static int CORNER=0, BAR=1, TEE=2, CROSS=3;
-  private final static int LEFT=0, UP=1, RIGHT=2, DOWN=3;
 
   public static Card strike() {
-    return new Card(true, -1, -1);
+    return new Card(true, (byte)-1, (byte)-1);
   }
   public static Card pathCorner() {
-    return new Card(false, CORNER, LEFT);
+    return new Card(false, CORNER, Dir.LEFT);
   }
   public static Card pathBar() {
-    return new Card(false, BAR, LEFT);
+    return new Card(false, BAR, Dir.LEFT);
   }
   public static Card pathTee() {
-    return new Card(false, TEE, LEFT);
+    return new Card(false, TEE, Dir.LEFT);
   }
   public static Card pathCross() {
-    return new Card(false, CROSS, LEFT);
+    return new Card(false, CROSS, Dir.LEFT);
   }
 
   // The hasRight... hasDown booleans are "effectively" final,
   // it's just more convenient to leave that out:
   private final boolean strike;
-  private final int pathType, rotation;
+  private final int pathType;
+  private final byte rotation;
   private boolean hasRight, hasLeft, hasUp, hasDown;
 
-  private Card(boolean strike, int pathType, int rotation) {
+  private Card(boolean strike, int pathType, byte rotation) {
     if (strike && pathType!=-1)
       throw new IllegalArgumentException("Cannot be both strike & path");
     if (!strike && pathType!=CORNER && pathType!=BAR && pathType!=TEE && pathType!=CROSS)
       throw new IllegalArgumentException("Path type "+pathType+" is illegal");
-    if (!strike && rotation!=LEFT && rotation!=RIGHT && rotation!=UP && rotation!=DOWN)
-      throw new IllegalArgumentException("Roatation "+rotation+" is illegal");
+    if (!strike &&
+        rotation!=Dir.LEFT &&
+        rotation!=Dir.RIGHT &&
+        rotation!=Dir.UP &&
+        rotation!=Dir.DOWN)
+      throw new IllegalArgumentException("Rotation "+rotation+" is illegal");
     this.strike=strike;
     this.pathType=pathType;
     this.rotation=rotation;
@@ -42,28 +46,31 @@ public final class Card {
     else
     if (pathType==BAR)
       hasUp=hasDown=!(
-        hasRight=hasLeft=(rotation==LEFT || rotation ==RIGHT)
+        hasRight=hasLeft=(rotation==Dir.LEFT || rotation ==Dir.RIGHT)
       );
     else
     if (pathType==TEE) {
-      if (rotation==LEFT) hasLeft=hasDown=hasRight=true;
-      if (rotation==UP)   hasDown=hasLeft=hasUp=true;
-      if (rotation==RIGHT)hasLeft=hasUp=hasRight=true;
-      if (rotation==DOWN) hasUp=hasRight=hasDown=true;
+      if (rotation==Dir.LEFT) hasLeft=hasDown=hasRight=true;
+      if (rotation==Dir.UP)   hasDown=hasLeft=hasUp=true;
+      if (rotation==Dir.RIGHT)hasLeft=hasUp=hasRight=true;
+      if (rotation==Dir.DOWN) hasUp=hasRight=hasDown=true;
     }
     else
     if (pathType==CORNER) {
-      if (rotation==LEFT) hasRight=hasDown=true;
-      if (rotation==UP)   hasDown=hasLeft=true;
-      if (rotation==RIGHT)hasLeft=hasUp=true;
-      if (rotation==DOWN) hasUp=hasRight=true;
+      if (rotation==Dir.LEFT) hasRight=hasDown=true;
+      if (rotation==Dir.UP)   hasDown=hasLeft=true;
+      if (rotation==Dir.RIGHT)hasLeft=hasUp=true;
+      if (rotation==Dir.DOWN) hasUp=hasRight=true;
     }
   }
   public Card rotate() {
     if (strike) throw new IllegalStateException("Cannot rotate a strike");
-    int r=rotation+1;
-    if (r>3) r=0;
-    return new Card(strike, pathType, r);
+    return new Card(
+      strike, pathType,
+      rotation==Dir.LAST
+        ?Dir.FIRST
+        :(byte)(rotation*2)
+    );
   }
 
   public boolean isStrike() {return strike;}
@@ -78,6 +85,16 @@ public final class Card {
   public boolean hasPathLeft() {return hasLeft;}
   public boolean hasPathUp() {return hasUp;}
   public boolean hasPathDown() {return hasDown;}
+
+  public boolean hasPath(byte direction) {
+    switch (direction) {
+      case Dir.LEFT: return hasLeft;
+      case Dir.RIGHT: return hasRight;
+      case Dir.UP: return hasUp;
+      case Dir.DOWN: return hasDown;
+      default: throw new RuntimeException("Invalid "+direction);
+    }
+  }
 
 
   // DEBUGGING: //
