@@ -35,7 +35,7 @@ public class Board {
     this.height=height;
     this.cells=new Cell[width * height];
     for (int i=0; i<cells.length; i++) this.cells[i]=new Cell();
-    reset();
+    reset(keys, bonuses);
   }
   public int getWidth() {return width;}
   public int getHeight() {return height;}
@@ -46,16 +46,39 @@ public class Board {
     return col+(row*width);
   }
 
-  public Board reset() {
+  public Board reset(int keyCount, int bonusCount) {
     for (int i=0; i<cells.length; i++)
       this.cells[i].clear();
     prev=-1;
     current=-1;
     RandomNoRepeat random=new RandomNoRepeat(randomizer, cells.length-2);
-    setKeys(random.next(), random.next(), random.next());
-    setBonus(random.next(), random.next());
+    setKeys(fillKeyBonus(random, keyCount));
+    setBonus(fillKeyBonus(random, bonusCount));
     return this;
   }
+  private static int[] fillKeyBonus(RandomNoRepeat random, int count) {
+    final int[] array=new int[count];
+    for (int i=0; i<array.length; i++)
+      array[i]=random.next();
+    return array;
+  }
+  private void setKeys(int... cellIndices) {
+    keyCells=cellIndices;
+    for (int index: cellIndices)
+      if (!cells[index+1].isEmpty())
+        throw new IllegalStateException("Cell is already used");
+      else
+        cells[index+1].setKey();
+  }
+  private void setBonus(int... cellIndices) {
+    bonusCells=cellIndices;
+    for (int index: cellIndices)
+      if (!cells[index+1].isEmpty())
+        throw new IllegalStateException("Cell is already used");
+      else
+        cells[index+1].setBonus();
+  }
+
 
   public Board setCard(Card card) {
     return setCard(current, card);
@@ -189,22 +212,4 @@ public class Board {
     setCard(newCard);
   }
 
-  private void setKeys(int... cellIndices) {
-    keyCells=cellIndices;
-    if (cellIndices.length != 3) throw new IllegalArgumentException("Only 3 keys");
-    for (int index: cellIndices)
-      if (!cells[index+1].isEmpty())
-        throw new IllegalStateException("Cell is already used");
-      else
-        cells[index+1].setKey();
-  }
-  private void setBonus(int... cellIndices) {
-    bonusCells=cellIndices;
-    if (cellIndices.length != 2) throw new IllegalArgumentException("Only 2 bonuses");
-    for (int index: cellIndices)
-      if (!cells[index+1].isEmpty())
-        throw new IllegalStateException("Cell is already used");
-      else
-        cells[index+1].setBonus();
-  }
 }

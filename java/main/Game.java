@@ -32,6 +32,7 @@ public class Game {
   private boolean onFirstCard=true;
   private int strikes=0;
   private int keys=0;
+  private int moved=0;
 
   public Game() {
     this(new GameConfig());
@@ -42,7 +43,7 @@ public class Game {
       randomizer, c.BOARD_WIDTH, c.BOARD_HEIGHT, c.KEY_COUNT, c.BONUS_COUNT
     );
     deck=new Deck(
-      randomizer, c.STRIKE_LIMIT,
+      randomizer, c.STRIKE_CARDS,
       c.CARD_CORNER_COUNT, c.CARD_BAR_COUNT, c.CARD_TEE_COUNT, c.CARD_CROSS_COUNT
     );
   }
@@ -69,6 +70,22 @@ public class Game {
     }
   }
 
+  public boolean tryPlayCard() {
+    requireState(CARD_UP);
+    byte options=board.whereCanIPlayTo();
+    boolean played=true;
+    if ((options ^ Dir.RIGHT)==0) play(Dir.RIGHT);
+    else
+    if ((options ^ Dir.DOWN)==0) play(Dir.DOWN);
+    else
+    if ((options ^ Dir.UP)==0) play(Dir.UP);
+    else
+    if ((options ^ Dir.LEFT)==0) play(Dir.LEFT);
+    else
+      played=false;
+    return played;
+  }
+
   public void playUp() {play(Dir.UP);}
   public void playDown() {play(Dir.DOWN);}
   public void playLeft() {play(Dir.LEFT);}
@@ -76,6 +93,7 @@ public class Game {
 
   public void rotateCard() {
     requireState(CARD_PLACED);
+    moved++;
     board.rotateCard();
   }
   public void finishPlayCard() {
@@ -106,6 +124,7 @@ public class Game {
     requireState(CARD_UP);
     if (!onFirstCard) throw new IllegalStateException("Not on very first");
     board.playFirstCard(upCard);
+    moved++;
     onFirstCard=false;
     state=CARD_PLACED;
     upCard=null;
@@ -132,10 +151,17 @@ public class Game {
     requireState(CARD_PLACED);
     return board.getCurrentCard();
   }
+  public int getMoved() {
+    return moved;
+  }
 
+  //////////////
+  // PRIVATE: //
+  //////////////
 
   private void play(byte direction) {
     requireState(CARD_UP);
+    moved++;
     board.play(upCard, direction);
     state=board.onFinish()
       ?(keys==config.KEY_COUNT ?WON :LOST)

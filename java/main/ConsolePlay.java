@@ -46,6 +46,7 @@ public class ConsolePlay {
           game.playFirstCard();
         }
         else
+        if (!game.tryPlayCard())
           promptCardPut();
       }
       else if (game.isCardPlaced()) {
@@ -56,9 +57,9 @@ public class ConsolePlay {
       }
     }
     drawGame();
-    if (game.isLost()) System.out.println("LOSE");
-    if (game.isWon()) System.out.println("WIN");
-    if (game.isGiveUp()) System.out.println("Gave up");
+    if (game.isLost()) System.out.print("LOSE");
+    if (game.isWon()) System.out.print("WIN");
+    if (game.isGiveUp()) System.out.print("Gave up");
   }
 
   private void promptCardPut() throws Exception {
@@ -77,7 +78,7 @@ public class ConsolePlay {
         continue;
       }
       Integer index=directionMap.get(direction.toLowerCase().charAt(0));
-      if (index==-1) {
+      if (index==null || index==-1) {
         error="Invalid entry; type \"up\", \"down\", \"right\" or \"left\", (or just \"u\", \"d\", \"r\" or \"l\"):";
         continue;
       }
@@ -104,7 +105,6 @@ public class ConsolePlay {
       else
       if (res.toLowerCase().startsWith("r")){
         game.rotateCard();
-        drawGame();
       }
       else
         error = "Error: Invalid entry";
@@ -113,6 +113,9 @@ public class ConsolePlay {
 
   private String prompt(String p, String error) throws Exception {
     drawGame();
+    System.out.append("Moved: ")
+      .append(String.valueOf(game.getMoved()))
+      .append("  ");
     if (error!=null) System.out.append(error).append("     ");
     System.out.print(p);
     return reader.readLine();
