@@ -14,7 +14,6 @@ public class Board {
   public final static int STD_HEIGHT=8;
   public final static int STD_KEYS=3;
   public final static int STD_BONUSES=2;
-  public final static Cell EMPTY=Cell.empty();
 
   private final Cell[] cells;
   private final int width, height;
@@ -32,6 +31,7 @@ public class Board {
     this.width=width;
     this.height=height;
     this.cells=new Cell[width * height];
+    for (int i=0; i<cells.length; i++) this.cells[i]=new Cell();
     reset();
   }
   public int getWidth() {return width;}
@@ -45,8 +45,7 @@ public class Board {
 
   public Board reset() {
     for (int i=0; i<cells.length; i++)
-      if (this.cells[i]!=EMPTY) // Silly maybe-optimization
-        this.cells[i]=EMPTY;
+      this.cells[i].clear();
     prev=-1;
     current=-1;
     RandomNoRepeat random=new RandomNoRepeat(randomizer, cells.length-2);
@@ -62,7 +61,7 @@ public class Board {
     return setCard(toIndex(row, col), card);
   }
   public Board setCard(int index, Card card) {
-    cells[index]=cells[index].fromCard(card);
+    cells[index].setCard(card);
     return this;
   }
   public Card getCard(int row, int col) {
@@ -174,18 +173,18 @@ public class Board {
     keyCells=cellIndices;
     if (cellIndices.length != 3) throw new IllegalArgumentException("Only 3 keys");
     for (int index: cellIndices)
-      if (cells[index+1]!=EMPTY)
+      if (!cells[index+1].isEmpty())
         throw new IllegalStateException("Cell is already used");
       else
-        cells[index+1]=Cell.key();
+        cells[index+1].setKey();
   }
   private void setBonus(int... cellIndices) {
     bonusCells=cellIndices;
     if (cellIndices.length != 2) throw new IllegalArgumentException("Only 2 bonuses");
     for (int index: cellIndices)
-      if (cells[index+1]!=EMPTY)
+      if (!cells[index+1].isEmpty())
         throw new IllegalStateException("Cell is already used");
       else
-        cells[index+1]=Cell.bonus();
+        cells[index+1].setBonus();
   }
 }

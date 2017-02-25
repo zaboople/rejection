@@ -53,10 +53,10 @@ public final class Card {
     }
     else
     if (pathType==CORNER) {
-      if (rotation==LEFT) hasDown=hasLeft=true;
-      if (rotation==UP)   hasLeft=hasUp=true;
-      if (rotation==RIGHT)hasUp=hasRight=true;
-      if (rotation==DOWN) hasRight=hasDown=true;
+      if (rotation==LEFT) hasRight=hasDown=true;
+      if (rotation==UP)   hasDown=hasLeft=true;
+      if (rotation==RIGHT)hasLeft=hasUp=true;
+      if (rotation==DOWN) hasUp=hasRight=true;
     }
   }
   public Card rotate() {

@@ -55,6 +55,7 @@ public class ConsolePlay {
         game.finishPlayCard();
       }
     }
+    drawGame();
     if (game.isLost()) System.out.println("LOSE");
     if (game.isWon()) System.out.println("WIN");
     if (game.isGiveUp()) System.out.println("Gave up");
@@ -112,7 +113,7 @@ public class ConsolePlay {
 
   private String prompt(String p, String error) throws Exception {
     drawGame();
-    if (error!=null) System.out.println(error);
+    if (error!=null) System.out.append(error).append("     ");
     System.out.print(p);
     return reader.readLine();
   }
@@ -121,6 +122,8 @@ public class ConsolePlay {
     Card card=game.getUpCard();
     if (card!=null)
       drawUpCard(card);
+    else
+      System.out.println("\n\n\n");
     System.out.println("Strikes: "+game.getStrikes());
     System.out.flush();
   }

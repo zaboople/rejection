@@ -137,7 +137,9 @@ public class Game {
   private void play(Consumer<Card> f) {
     requireState(CARD_UP);
     f.accept(upCard);
-    state=CARD_PLACED;
+    state=board.onFinish()
+      ?(keys==config.KEY_COUNT ?WON :LOST)
+      :CARD_PLACED;
     upCard=null;
   }
   private boolean canPlay(Supplier<Boolean> f) {

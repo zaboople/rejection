@@ -45,7 +45,7 @@ public class AsciiBoard {
 
 
   private static String getEdge(Cell cell, Function<Card, Boolean> checker, String ifSo, String ifNot) {
-    if (cell==Board.EMPTY) return ifNot;
+    if (cell.isEmpty()) return ifNot;
     if (!cell.isCard()) return ifNot;
     if (!checker.apply(cell.getCard())) return ifNot;
     return ifSo;
@@ -53,7 +53,7 @@ public class AsciiBoard {
   private static char getCenter(Cell cell, boolean veryFirst, boolean veryLast) {
     if (veryFirst) return 'S';
     if (veryLast) return 'F';
-    if (cell==Board.EMPTY) return ' ';
+    if (cell.isEmpty()) return ' ';
     if (cell.isBonus()) return 'B';
     if (cell.isKey()) return 'K';
     return '*';
