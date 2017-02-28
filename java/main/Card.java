@@ -95,6 +95,56 @@ public final class Card {
       default: throw new RuntimeException("Invalid "+direction);
     }
   }
+  public byte hasPaths() {
+    return (byte) (
+      (hasLeft ? Dir.LEFT :0)
+      |
+      (hasRight ? Dir.RIGHT :0)
+      |
+      (hasUp ? Dir.UP :0)
+      |
+      (hasDown ? Dir.DOWN :0)
+    );
+  }
+  public Card getOptimalRotationFor(byte canPlayTo, byte cameFrom) {
+    boolean[] counter={false, false, false, false};
+    if (pathType==CROSS) return this;
+    if (pathType==BAR) {
+      Card other=this.rotate();
+      return other.intersectCount(canPlayTo, cameFrom) >
+              this.intersectCount(canPlayTo, cameFrom)
+        ?other
+        :this;
+    }
+    Card bestCard=this;
+    int bestCount=this.intersectCount(canPlayTo, cameFrom);
+    Card nextCard=this;
+    for (int i=0; i<3; i++) {
+      nextCard=nextCard.rotate();
+      int count=nextCard.intersectCount(canPlayTo, cameFrom);
+      if (count > bestCount) {
+        bestCard=nextCard;
+        bestCount=count;
+      }
+    }
+    return bestCard;
+  }
+  private int intersectCount(byte directions, byte cameFrom) {
+    byte hasPaths=this.hasPaths();
+    if ((hasPaths & cameFrom)==0) return -1;
+    directions &=hasPaths;
+    return
+      count(directions, Dir.LEFT)
+      +
+      count(directions, Dir.RIGHT)
+      +
+      count(directions, Dir.UP)
+      +
+      count(directions, Dir.DOWN);
+  }
+  private int count(byte directions, byte direction) {
+    return (directions & direction)==0 ?0 :1;
+  }
 
 
   // DEBUGGING: //
@@ -105,12 +155,17 @@ public final class Card {
     return string;
   }
   private String makeString() {
-    if (isStrike()) return "!";
+    if (isStrike()) return "!     ";
     StringBuilder sb=new StringBuilder();
     if (isPathCorner()) sb.append("L");
     if (isPathTee()) sb.append("T");
     if (isPathBar()) sb.append("-");
     if (isPathCross()) sb.append("+");
+    sb.append(" ");
+    sb.append(hasPathLeft() ? "L" :"_");
+    sb.append(hasPathRight() ? "R" :"_");
+    sb.append(hasPathDown() ? "D" :"_");
+    sb.append(hasPathUp() ? "U" :"_");
     return sb.toString();
   }
 

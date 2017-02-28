@@ -47,12 +47,11 @@ public class ConsolePlay {
         }
         else
         if (!game.tryPlayCard())
-          promptCardPut();
+          game.playCardWherever();
       }
       else if (game.isCardPlaced()) {
         Card card=game.getPlacedCard();
-        if (card.isPathCorner() || card.isPathTee())
-          promptCardRotate();
+        promptCardRotate();
         game.finishPlayCard();
       }
     }
@@ -99,13 +98,15 @@ public class ConsolePlay {
     String error=null;
     boolean done=false;
     while (!done) {
-      String res=prompt("Enter R to rotate, or nothing to continue: ", error).toLowerCase();
+      String res=prompt("Enter R to rotate, S to switch or nothing to continue: ", error).toLowerCase();
       if (res.length()==0)
         done=true;
       else
-      if (res.toLowerCase().startsWith("r")){
+      if (res.toLowerCase().startsWith("r"))
         game.rotateCard();
-      }
+      else
+      if (res.toLowerCase().startsWith("s"))
+        game.switchPlayCard();
       else
         error = "Error: Invalid entry";
     }
@@ -127,7 +128,7 @@ public class ConsolePlay {
       drawUpCard(card);
     else
       System.out.println("\n\n\n");
-    System.out.println("Strikes: "+game.getStrikes());
+    System.out.println("Strikes: "+game.getStrikes()+" / "+game.getStrikeLimit());
     System.out.flush();
   }
   private void drawUpCard(Card card) throws Exception {

@@ -1,0 +1,3 @@
+Make last card played print one last line less, to avoid hiccup
+Arbitrary Start and finish locations
+

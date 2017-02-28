@@ -16,6 +16,14 @@ public class Dir {
     OPPOSITES[RIGHT]=LEFT;
     OPPOSITES[DOWN]=UP;
   }
+  public final static char[] DIR_TO_NAME=new char[LAST+1];
+  static {
+    for (int i=0; i<DIR_TO_NAME.length; i++) DIR_TO_NAME[i]='?';
+    DIR_TO_NAME[LEFT]='L';
+    DIR_TO_NAME[UP]='U';
+    DIR_TO_NAME[RIGHT]='R';
+    DIR_TO_NAME[DOWN]='D';
+  }
 
 
   private static byte ALL=LEFT + RIGHT + UP + DOWN;
@@ -26,17 +34,6 @@ public class Dir {
     return (ALL | (byte)dir) == ALL;
   }
 
-  private final static int[] INDICES=new int[LAST+1];
-  static {
-    for (int i=0; i<INDICES.length; i++) INDICES[i]=-1;
-    INDICES[LEFT]=0;
-    INDICES[UP]=1;
-    INDICES[RIGHT]=2;
-    INDICES[DOWN]=3;
-  }
-  public static int index(byte direction) {
-    return INDICES[direction];
-  }
 
   public static void main(String[] args) {
     System.out.println(isLegal(RIGHT));

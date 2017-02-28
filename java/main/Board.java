@@ -128,38 +128,41 @@ public class Board {
   }
 
   public boolean canPlay(byte direction) {
-    return getTarget(direction) > 0;
+    return getTarget(current, direction) > 0;
   }
   public byte whereCanIPlayTo() {
+    return whereCanIPlayToFrom(current);
+  }
+  public byte whereCanIPlayToFrom(int fromPos) {
     return (byte) (
-      canPlayTo(Dir.LEFT) |
-      canPlayTo(Dir.RIGHT)|
-      canPlayTo(Dir.UP)   |
-      canPlayTo(Dir.DOWN)
+      canPlayTo(fromPos, Dir.LEFT) |
+      canPlayTo(fromPos, Dir.RIGHT)|
+      canPlayTo(fromPos, Dir.UP)   |
+      canPlayTo(fromPos, Dir.DOWN)
     );
   }
-  private byte canPlayTo(byte direction) {
-    return getTarget(direction)>0 ?direction :(byte)0;
+  private byte canPlayTo(int fromPosition, byte direction) {
+    return getTarget(fromPosition, direction)>0 ?direction :(byte)0;
   }
-  private int getTarget(byte direction) {
+  private int getTarget(int fromPosition, byte direction) {
     int target;
     boolean pastEdge;
     switch (direction) {
       case Dir.UP:
-        pastEdge=current < width; //Top row
-        target=current-width;
+        pastEdge=fromPosition < width; //Top row
+        target=fromPosition-width;
         break;
       case Dir.DOWN:
-        pastEdge=current / width==height-1; //Bottom row
-        target=current+width;
+        pastEdge=fromPosition / width==height-1; //Bottom row
+        target=fromPosition+width;
         break;
       case Dir.LEFT:
-        pastEdge=current % width==0; //First column
-        target=current-1;
+        pastEdge=fromPosition % width==0; //First column
+        target=fromPosition-1;
         break;
       case Dir.RIGHT:
-        pastEdge=current % width==width-1; // Last column
-        target=current+1;
+        pastEdge=fromPosition % width==width-1; // Last column
+        target=fromPosition+1;
         break;
       default:
         throw new IllegalArgumentException(""+direction);
@@ -167,12 +170,11 @@ public class Board {
     return (
         !pastEdge
         &&
-        getCurrentCard().hasPath(direction)
+        (getCard(fromPosition)==null || getCard(fromPosition).hasPath(direction))
         &&
         getCard(target)==null
       )
-      ?target
-      :(byte)-1;
+      ?target :-1;
   }
 
   public void playFirstCard(Card card) {
@@ -180,16 +182,51 @@ public class Board {
     current=0;
   }
   public void play(Card card, final byte direction) {
-    int target=getTarget(direction);
+    int target=getTarget(current, direction);
     if (target<1)
       throw new IllegalStateException("Not a legal card placement");;
-    final byte reversed=Dir.OPPOSITES[direction];
-    while (!card.hasPath(reversed))
-      card=card.rotate();
+    //final byte reversed=Dir.OPPOSITES[direction];
+    //while (!card.hasPath(reversed))
+    //  card=card.rotate();
+    card=card.getOptimalRotationFor(whereCanIPlayToFrom(target), Dir.OPPOSITES[direction]);
     setCard(target, card);
     prev=current;
     current=target;
   }
+  public boolean switchPlay() {
+    if (current==0)
+      return false;
+    byte[] toTry;
+    if (current==prev+1)
+      return trySwitch(Dir.DOWN, Dir.LEFT, Dir.UP);
+    if (current==prev+width)
+      return trySwitch(Dir.LEFT, Dir.UP, Dir.RIGHT);
+    if (current==prev-1)
+      return trySwitch(Dir.UP, Dir.RIGHT, Dir.DOWN);
+    if (current==prev-width)
+      return trySwitch(Dir.RIGHT, Dir.DOWN, Dir.LEFT);
+    throw new IllegalStateException("Current / prev mismatch "+current+" "+prev);
+  }
+  private boolean trySwitch(byte... toTry){
+    Card card=getCard(current);
+    for (byte direction: toTry) {
+      int target=getTarget(prev, direction);
+      if (target > -1) {
+        final byte reversed=Dir.OPPOSITES[direction];
+        while (!card.hasPath(reversed))
+          card=card.rotate();
+        card=card.getOptimalRotationFor(whereCanIPlayToFrom(target), Dir.OPPOSITES[direction]);
+
+
+        setCard(target, card);
+        setCard(current, null);
+        current=target;
+        return true;
+      }
+    }
+    return false;
+  }
+
   public void rotateCard() {
     Card nowCard=getCurrentCard();
     Card newCard=nowCard.rotate();

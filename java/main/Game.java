@@ -85,6 +85,19 @@ public class Game {
       played=false;
     return played;
   }
+  public void playCardWherever() {
+    requireState(CARD_UP);
+    byte options=board.whereCanIPlayTo();
+    if ((options & Dir.RIGHT)!=0) play(Dir.RIGHT);
+    else
+    if ((options & Dir.DOWN)!=0) play(Dir.DOWN);
+    else
+    if ((options & Dir.UP)!=0) play(Dir.UP);
+    else
+    if ((options & Dir.LEFT)!=0) play(Dir.LEFT);
+    else
+      throw new IllegalStateException("Invalid play options: "+options);
+  }
 
   public void playUp() {play(Dir.UP);}
   public void playDown() {play(Dir.DOWN);}
@@ -95,6 +108,9 @@ public class Game {
     requireState(CARD_PLACED);
     moved++;
     board.rotateCard();
+  }
+  public boolean switchPlayCard() {
+    return board.switchPlay();
   }
   public void finishPlayCard() {
     requireState(CARD_PLACED);
@@ -153,6 +169,9 @@ public class Game {
   }
   public int getMoved() {
     return moved;
+  }
+  public int getStrikeLimit() {
+    return config.STRIKE_LIMIT;
   }
 
   //////////////
