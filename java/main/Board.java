@@ -18,13 +18,13 @@ public class Board {
 
   private final Cell[] cells;
   private final int width, height;
-  private final int startPos, finishPos;
 
 
   private int prev=-1;
   private int current=-1;
   private int[] keyCells;
   private int[] bonusCells;
+  private int startPos, finishPos;
   private final SecureRandom randomizer;
 
   public Board() {
@@ -102,10 +102,10 @@ public class Board {
     return current % width;
   }
   public boolean onFinish() {
-    return current==cells.length-1;
+    return current==finishPos;
   }
   public boolean onStart() {
-    return current==-1;
+    return current==-1 || current==startPos;
   }
 
   public boolean canPlay(byte direction) {
