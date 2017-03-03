@@ -18,6 +18,7 @@ public class Board {
 
   private final Cell[] cells;
   private final int width, height;
+  private final int startPos, finishPos;
 
 
   private int prev=-1;
@@ -34,6 +35,8 @@ public class Board {
     this.width=width;
     this.height=height;
     this.cells=new Cell[width * height];
+    this.startPos=0;
+    this.finishPos=cells.length-1;
     for (int i=0; i<cells.length; i++) this.cells[i]=new Cell();
     reset(keys, bonuses);
   }
@@ -55,28 +58,6 @@ public class Board {
     setKeys(fillKeyBonus(random, keyCount));
     setBonus(fillKeyBonus(random, bonusCount));
     return this;
-  }
-  private static int[] fillKeyBonus(RandomNoRepeat random, int count) {
-    final int[] array=new int[count];
-    for (int i=0; i<array.length; i++)
-      array[i]=random.next();
-    return array;
-  }
-  private void setKeys(int... cellIndices) {
-    keyCells=cellIndices;
-    for (int index: cellIndices)
-      if (!cells[index+1].isEmpty())
-        throw new IllegalStateException("Cell is already used");
-      else
-        cells[index+1].setKey();
-  }
-  private void setBonus(int... cellIndices) {
-    bonusCells=cellIndices;
-    for (int index: cellIndices)
-      if (!cells[index+1].isEmpty())
-        throw new IllegalStateException("Cell is already used");
-      else
-        cells[index+1].setBonus();
   }
 
 
@@ -141,6 +122,64 @@ public class Board {
       canPlayTo(fromPos, Dir.DOWN)
     );
   }
+  public void rotateCard() {
+    Card nowCard=getCurrentCard();
+    Card newCard=nowCard.rotate();
+    if (prev==-1){
+    }
+    else
+    if (prev==current-1)
+      while (!newCard.hasPathLeft()) newCard=newCard.rotate();
+    else
+    if (prev==current+1)
+      while (!newCard.hasPathRight()) newCard=newCard.rotate();
+    else
+    if (prev==current-width)
+      while (!newCard.hasPathUp()) newCard=newCard.rotate();
+    else
+    if (prev==current+width)
+      while (!newCard.hasPathDown()) newCard=newCard.rotate();
+    else
+      throw new IllegalStateException("Previous card "+prev+" doesn't seem to align to new "+current);
+    setCard(newCard);
+  }
+  public void playFirstCard(Card card) {
+    setCard(startPos, card);
+    current=startPos;
+  }
+  public void play(Card card, final byte direction) {
+    int target=getTarget(current, direction);
+    if (target<1)
+      throw new IllegalStateException("Not a legal card placement");;
+    card=getOptimalRotation(card, target, direction);
+    setCard(target, card);
+    prev=current;
+    current=target;
+  }
+  public boolean switchPlay() {
+    if (current==startPos)
+      return false;
+    byte[] toTry;
+    if (current==prev+1)
+      return trySwitch(Dir.DOWN, Dir.LEFT, Dir.UP);
+    if (current==prev+width)
+      return trySwitch(Dir.LEFT, Dir.UP, Dir.RIGHT);
+    if (current==prev-1)
+      return trySwitch(Dir.UP, Dir.RIGHT, Dir.DOWN);
+    if (current==prev-width)
+      return trySwitch(Dir.RIGHT, Dir.DOWN, Dir.LEFT);
+    throw new IllegalStateException("Current / prev mismatch "+current+" "+prev);
+  }
+
+  ////////////////////////
+  // PRIVATE GAME PLAY: //
+  ////////////////////////
+
+  private Card getOptimalRotation(Card card, int target, byte direction) {
+    return card.getOptimalRotationFor(
+      whereCanIPlayToFrom(target), Dir.OPPOSITES[direction]
+    );
+  }
   private byte canPlayTo(int fromPosition, byte direction) {
     return getTarget(fromPosition, direction)>0 ?direction :(byte)0;
   }
@@ -177,47 +216,12 @@ public class Board {
       ?target :-1;
   }
 
-  public void playFirstCard(Card card) {
-    setCard(0, card);
-    current=0;
-  }
-  public void play(Card card, final byte direction) {
-    int target=getTarget(current, direction);
-    if (target<1)
-      throw new IllegalStateException("Not a legal card placement");;
-    //final byte reversed=Dir.OPPOSITES[direction];
-    //while (!card.hasPath(reversed))
-    //  card=card.rotate();
-    card=card.getOptimalRotationFor(whereCanIPlayToFrom(target), Dir.OPPOSITES[direction]);
-    setCard(target, card);
-    prev=current;
-    current=target;
-  }
-  public boolean switchPlay() {
-    if (current==0)
-      return false;
-    byte[] toTry;
-    if (current==prev+1)
-      return trySwitch(Dir.DOWN, Dir.LEFT, Dir.UP);
-    if (current==prev+width)
-      return trySwitch(Dir.LEFT, Dir.UP, Dir.RIGHT);
-    if (current==prev-1)
-      return trySwitch(Dir.UP, Dir.RIGHT, Dir.DOWN);
-    if (current==prev-width)
-      return trySwitch(Dir.RIGHT, Dir.DOWN, Dir.LEFT);
-    throw new IllegalStateException("Current / prev mismatch "+current+" "+prev);
-  }
   private boolean trySwitch(byte... toTry){
     Card card=getCard(current);
     for (byte direction: toTry) {
       int target=getTarget(prev, direction);
       if (target > -1) {
-        final byte reversed=Dir.OPPOSITES[direction];
-        while (!card.hasPath(reversed))
-          card=card.rotate();
-        card=card.getOptimalRotationFor(whereCanIPlayToFrom(target), Dir.OPPOSITES[direction]);
-
-
+        card=getOptimalRotation(card, target, direction);
         setCard(target, card);
         setCard(current, null);
         current=target;
@@ -227,26 +231,32 @@ public class Board {
     return false;
   }
 
-  public void rotateCard() {
-    Card nowCard=getCurrentCard();
-    Card newCard=nowCard.rotate();
-    if (prev==-1){
-    }
-    else
-    if (prev==current-1)
-      while (!newCard.hasPathLeft()) newCard=newCard.rotate();
-    else
-    if (prev==current+1)
-      while (!newCard.hasPathRight()) newCard=newCard.rotate();
-    else
-    if (prev==current-width)
-      while (!newCard.hasPathUp()) newCard=newCard.rotate();
-    else
-    if (prev==current+width)
-      while (!newCard.hasPathDown()) newCard=newCard.rotate();
-    else
-      throw new IllegalStateException("Previous card "+prev+" doesn't seem to align to new "+current);
-    setCard(newCard);
+  /////////////////////////////
+  // PRIVATE INITIALIZATION: //
+  /////////////////////////////
+
+  private static int[] fillKeyBonus(RandomNoRepeat random, int count) {
+    final int[] array=new int[count];
+    for (int i=0; i<array.length; i++)
+      array[i]=random.next();
+    return array;
   }
+  private void setKeys(int... cellIndices) {
+    keyCells=cellIndices;
+    for (int index: cellIndices)
+      if (!cells[index+1].isEmpty())
+        throw new IllegalStateException("Cell is already used");
+      else
+        cells[index+1].setKey();
+  }
+  private void setBonus(int... cellIndices) {
+    bonusCells=cellIndices;
+    for (int index: cellIndices)
+      if (!cells[index+1].isEmpty())
+        throw new IllegalStateException("Cell is already used");
+      else
+        cells[index+1].setBonus();
+  }
+
 
 }

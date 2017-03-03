@@ -1,6 +1,6 @@
-The only thing working is an interactive console game. It seems to be free of bugs but is not thoroughly tested.
+I made this for a job interview. I was rejected based on the utterly abysmal quality of my effort.
 
-To run the game, use the run-game.sh script.
+Everybody hates me. So I named the game "Rejection".
 
-To configure the game's operation, edit main/GameConfig.java. Unusual configurations may produce nasty errors and/or lockups.
+Anyhow, I decided to make it fun for *me* to play. It's still a little crappy because java doesn't understand what a proper TTY is, but it's still fun enough.
 
