@@ -98,7 +98,7 @@ public class ConsolePlay {
     String error=null;
     boolean done=false;
     while (!done) {
-      String res=prompt("Enter R to rotate, S to switch or nothing to continue: ", error).toLowerCase();
+      String res=prompt("[R]otate, [S]witch or [ ]: ", error).toLowerCase();
       if (res.length()==0)
         done=true;
       else
