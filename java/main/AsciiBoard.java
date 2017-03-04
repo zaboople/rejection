@@ -29,7 +29,8 @@ public class AsciiBoard {
     switch (innerLine) {
       case 0:
         app.append(corner)
-          .append(getEdge(cell, Card::hasPathUp, "|"+corner, " "+corner));
+          .append(getEdge(cell, Card::hasPathUp, "|", " "))
+          .append(corner);
         break;
       case 1:
         app.append(getEdge(cell, Card::hasPathLeft, "-", " "))

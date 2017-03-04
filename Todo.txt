@@ -1,4 +1,4 @@
 Put on fucking github
-First card is not rotationally optimized
+There is a bug where one down from top left, I played a corner pointing straight up, and it LOST
 Do not need to print card between turns, just STRIKE or nothing
 

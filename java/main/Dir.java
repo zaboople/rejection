@@ -25,19 +25,4 @@ public class Dir {
     DIR_TO_NAME[DOWN]='D';
   }
 
-
-  private static byte ALL=LEFT + RIGHT + UP + DOWN;
-  public static boolean isLegal(byte dir) {
-    return (ALL | dir) == ALL;
-  }
-  private static boolean isLegal(int dir) {
-    return (ALL | (byte)dir) == ALL;
-  }
-
-
-  public static void main(String[] args) {
-    System.out.println(isLegal(RIGHT));
-    System.out.println(isLegal(12));
-    System.out.println(isLegal(77)+" "+isLegal(-1)+" "+isLegal(16));
-  }
 }

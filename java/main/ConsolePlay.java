@@ -1,6 +1,8 @@
 package main;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.io.FileInputStream;
+import java.io.File;
 import java.util.Map;
 import java.util.HashMap;
 
@@ -8,13 +10,17 @@ public class ConsolePlay {
   public static void main(String[] args) throws Exception {
     GameConfig config;
     if (args.length>0) {
-      String a=args[0].toLowerCase();
-      if (a.startsWith("--")) a=a.substring(1);
-      if (a.equals("-small")) config=new GameConfigTiny();
-      else
-      if (a.equals("-large")) config=new GameConfigBig();
-      else {
-        System.out.println("ERROR: "+args[0]);
+      String a=args[0];
+      File file=new File(a);
+      if (!file.exists()) {
+        System.out.println("Not a file: "+a);
+        System.exit(1);
+        return;
+      }
+      try {
+        config=new GameConfig().load(new FileInputStream(file));
+      } catch (Exception e) {
+        System.out.println(e.getMessage());
         System.exit(1);
         return;
       }
@@ -24,13 +30,24 @@ public class ConsolePlay {
     new ConsolePlay(config).play();
   }
 
+
   private final BufferedReader reader;
   private final GameConfig config;
+  private final String strikeStars;
   private Game game;
 
   private ConsolePlay(GameConfig config) throws Exception {
     this.config=config;
     reader=new BufferedReader(new InputStreamReader(System.in));
+    {
+      int strikeStarCount=
+        (
+          (config.BOARD_WIDTH * 4) + 1 - " STRIKE ".length()
+        ) / 2;
+      StringBuilder sb=new StringBuilder(strikeStarCount);
+      for (int i=0; i<strikeStarCount; i++) sb.append("*");
+      strikeStars=sb.toString();
+    }
   }
 
   private void play() throws Exception {
@@ -93,7 +110,7 @@ public class ConsolePlay {
     AsciiBoard.draw(game.getBoard(), System.out);
     Card card=game.getUpCard();
     if (card!=null && card.isStrike())
-      System.out.println("******************** STRIKE ********************");
+      System.out.append(strikeStars).append(" STRIKE ").append(strikeStars).append("\n");
     else
       System.out.println("");
     System.out.append("Strikes: ").append(""+game.getStrikes()).append(" / ").append(""+game.getStrikeLimit()).append("\n");
@@ -102,23 +119,4 @@ public class ConsolePlay {
     System.out.flush();
   }
 
-  /** No longer in use */
-  private void drawUpCard(Card card) throws Exception {
-    if (card.isStrike()) {
-      System.out.println("       ___");
-      System.out.println("Card: |\\ /|");
-      System.out.println("      | x |");
-      System.out.println("      |/_\\|");
-    } else {
-      char
-        uChar=card.hasPathUp() ? '|' : ' ',
-        dChar=card.hasPathDown() ? '|' : '_',
-        lChar=card.hasPathLeft() ? '-' : ' ',
-        rChar=card.hasPathRight() ? '-' : ' ';
-      System.out.append("       ___").append("\n");
-      System.out.append("Card: | ").append(uChar).append(" |\n");
-      System.out.append("      |").append(lChar).append(" ").append(rChar).append("|\n");
-      System.out.append("      |_").append(dChar).append("_|\n");
-    }
-  }
 }

@@ -10,6 +10,11 @@ import java.util.function.Supplier;
  * game rules.
  */
 public class Board {
+
+  /////////////////////
+  // INITIALIZATION: //
+  /////////////////////
+
   private final Cell[] cells;
   private final int width, height;
 
@@ -51,6 +56,10 @@ public class Board {
     return this;
   }
 
+  ////////////////////////////////////////
+  // PUBLIC GAME PLAY, READ-ONLY STATE: //
+  ////////////////////////////////////////
+
   public int getWidth() {return width;}
   public int getHeight() {return height;}
   public int[] getKeyCells() {return keyCells;}
@@ -58,17 +67,6 @@ public class Board {
   public Cell getCell(int row, int col) {return getCell(toIndex(row, col));}
   public Cell getCell(int i) {return cells[i];}
 
-
-  public Board setCard(Card card) {
-    return setCard(current, card);
-  }
-  public Board setCard(int row, int col, Card card) {
-    return setCard(toIndex(row, col), card);
-  }
-  public Board setCard(int index, Card card) {
-    cells[index].setCard(card);
-    return this;
-  }
   public Card getCard(int row, int col) {
     return getCard(toIndex(row, col));
   }
@@ -113,6 +111,11 @@ public class Board {
       canPlayTo(fromPos, Dir.DOWN)
     );
   }
+
+  ////////////////////////////////////////
+  // PUBLIC GAME PLAY STATE MANAGEMENT: //
+  ////////////////////////////////////////
+
   public void rotateCard() {
     Card nowCard=getCurrentCard();
     Card newCard=nowCard.rotate();
@@ -135,6 +138,7 @@ public class Board {
     setCard(newCard);
   }
   public void playFirstCard(Card card) {
+    card=card.getOptimalRotationFor(whereCanIPlayToFrom(startPos), (byte)0);
     setCard(startPos, card);
     current=startPos;
   }
@@ -254,6 +258,17 @@ public class Board {
   }
   private int getCurrentCol() {
     return current % width;
+  }
+  /** This is only exposed for testing. */
+  public Board setCard(int row, int col, Card card) {
+    return setCard(toIndex(row, col), card);
+  }
+  private Board setCard(Card card) {
+    return setCard(current, card);
+  }
+  private Board setCard(int index, Card card) {
+    cells[index].setCard(card);
+    return this;
   }
 
 }

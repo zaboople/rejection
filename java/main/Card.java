@@ -131,7 +131,7 @@ public final class Card {
   }
   private int intersectCount(byte directions, byte cameFrom) {
     byte hasPaths=this.hasPaths();
-    if ((hasPaths & cameFrom)==0) return -1;
+    if (cameFrom != 0 && (hasPaths & cameFrom)==0) return -1;
     directions &=hasPaths;
     return
       count(directions, Dir.LEFT)
