@@ -10,15 +10,8 @@ import java.util.function.Supplier;
  * game rules.
  */
 public class Board {
-  public final static int STD_WIDTH=8;
-  public final static int STD_HEIGHT=8;
-  public final static int STD_KEYS=3;
-  public final static int STD_BONUSES=2;
-
-
   private final Cell[] cells;
   private final int width, height;
-
 
   private int prev=-1;
   private int current=-1;
@@ -27,36 +20,43 @@ public class Board {
   private int startPos, finishPos;
   private final SecureRandom randomizer;
 
-  public Board() {
-    this(new SecureRandom(), STD_WIDTH, STD_HEIGHT, STD_KEYS, STD_BONUSES);
-  }
-  public Board(SecureRandom randomizer, int width, int height, int keys, int bonuses) {
+  public Board(SecureRandom randomizer, int width, int height) {
     this.randomizer=randomizer;
     this.width=width;
     this.height=height;
     this.cells=new Cell[width * height];
     for (int i=0; i<cells.length; i++) this.cells[i]=new Cell();
-    reset(keys, bonuses);
   }
-  public int getWidth() {return width;}
-  public int getHeight() {return height;}
-  public int[] getKeyCells() {return keyCells;}
-  public int[] getBonusCells() {return bonusCells;}
-
   public Board reset(int keyCount, int bonusCount) {
+    RandomNoRepeat random=new RandomNoRepeat(randomizer, cells.length-2);
+    reset(
+      random.next(),
+      random.next(),
+      random.fill(keyCount),
+      random.fill(bonusCount)
+    );
+    return this;
+  }
+  public Board reset(int start, int finish, int[] keys, int[] bonuses) {
     for (int i=0; i<cells.length; i++)
       this.cells[i].clear();
     prev=-1;
     current=-1;
-    RandomNoRepeat random=new RandomNoRepeat(randomizer, cells.length-2);
-    this.startPos=random.next();
+    this.startPos=start;
+    this.finishPos=finish;
     getCell(startPos).setUsed();
-    this.finishPos=random.next();
     getCell(finishPos).setUsed();
-    setKeys(fillKeyBonus(random, keyCount));
-    setBonus(fillKeyBonus(random, bonusCount));
+    setKeys(keys);
+    setBonus(bonuses);
     return this;
   }
+
+  public int getWidth() {return width;}
+  public int getHeight() {return height;}
+  public int[] getKeyCells() {return keyCells;}
+  public int[] getBonusCells() {return bonusCells;}
+  public Cell getCell(int row, int col) {return getCell(toIndex(row, col));}
+  public Cell getCell(int i) {return cells[i];}
 
 
   public Board setCard(Card card) {
@@ -78,8 +78,6 @@ public class Board {
   public Card getCurrentCard() {
     return getCard(current);
   }
-  public Cell getCell(int row, int col) {return getCell(toIndex(row, col));}
-  public Cell getCell(int i) {return cells[i];}
 
   public int getDistanceTo(int index) {
     int currRow=getCurrentRow();
@@ -91,8 +89,6 @@ public class Board {
 
   public boolean onKey() {return cells[current].isKey();}
   public boolean onBonus() {return cells[current].isBonus();}
-
-
   public boolean onFinish() {
     return current==finishPos;
   }
@@ -230,12 +226,6 @@ public class Board {
   // PRIVATE INITIALIZATION: //
   /////////////////////////////
 
-  private static int[] fillKeyBonus(RandomNoRepeat random, int count) {
-    final int[] array=new int[count];
-    for (int i=0; i<array.length; i++)
-      array[i]=random.next();
-    return array;
-  }
   private void setKeys(int... cellIndices) {
     keyCells=cellIndices;
     reserve(Cell::setKey, cellIndices);

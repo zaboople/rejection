@@ -34,17 +34,13 @@ public class Game {
   private int keys=0;
   private int moved=0;
 
-  public Game() {
-    this(new GameConfig());
-  }
   public Game(GameConfig c) {
     this.config=c;
-    board=new Board(
-      randomizer, c.BOARD_WIDTH, c.BOARD_HEIGHT, c.KEY_COUNT, c.BONUS_COUNT
-    );
+    board=new Board(randomizer, c.BOARD_WIDTH, c.BOARD_HEIGHT).reset(c.KEYS, c.BONUSES);
+    config.ensureEnoughCards();
     deck=new Deck(
       randomizer, c.STRIKE_CARDS,
-      c.CARD_CORNER_COUNT, c.CARD_BAR_COUNT, c.CARD_TEE_COUNT, c.CARD_CROSS_COUNT
+      c.CARD_CORNERS, c.CARD_BARS, c.CARD_TEES, c.CARD_CROSSES
     );
   }
 
@@ -119,7 +115,7 @@ public class Game {
     else if (board.onBonus())
       strikes=strikes==0 ?0 :strikes-1;
     if (board.onFinish())
-      state=keys==config.KEY_COUNT ?WON :LOST;
+      state=keys==config.KEYS ?WON :LOST;
     else
     if (board.whereCanIPlayTo()==0)
       state=LOST;
@@ -175,7 +171,7 @@ public class Game {
     return config.STRIKE_LIMIT;
   }
   public int getKeyLimit() {
-    return config.KEY_COUNT;
+    return config.KEYS;
   }
 
   //////////////

@@ -6,31 +6,35 @@ import java.util.HashMap;
 
 public class ConsolePlay {
   public static void main(String[] args) throws Exception {
-    new ConsolePlay().play();
+    GameConfig config;
+    if (args.length>0) {
+      String a=args[0].toLowerCase();
+      if (a.startsWith("--")) a=a.substring(1);
+      if (a.equals("-small")) config=new GameConfigTiny();
+      else
+      if (a.equals("-large")) config=new GameConfigBig();
+      else {
+        System.out.println("ERROR: "+args[0]);
+        System.exit(1);
+        return;
+      }
+    }
+    else
+      config=new GameConfig();
+    new ConsolePlay(config).play();
   }
-
-  private final static Map<Character, Integer> directionMap=new HashMap<>();
-  static {
-    //up/down/left/right array:
-    directionMap.put('u', 0);
-    directionMap.put('d', 1);
-    directionMap.put('l', 2);
-    directionMap.put('r', 3);
-  }
-  private final static String[] directions={"Up", "Down", "Left", "Right"};
-
 
   private final BufferedReader reader;
+  private final GameConfig config;
   private Game game;
 
-
-
-  private ConsolePlay() throws Exception {
+  private ConsolePlay(GameConfig config) throws Exception {
+    this.config=config;
     reader=new BufferedReader(new InputStreamReader(System.in));
   }
 
   private void play() throws Exception {
-    game=new Game();
+    game=new Game(config);
     while (!game.isOver()){
       if (game.isWaiting()){
         game.nextCard();
@@ -61,44 +65,11 @@ public class ConsolePlay {
     if (game.isGiveUp()) System.out.print("Gave up");
   }
 
-  private void promptCardPut() throws Exception {
-    boolean[] directions={
-      game.canPlayUp(),
-      game.canPlayDown(),
-      game.canPlayLeft(),
-      game.canPlayRight()
-    };
-    boolean placed=false;
-    String error=null;
-    while (!placed) {
-      String direction=prompt("Enter direction to place card (Up/Down/Left/Right): ", error);
-      if (direction.length()==0) {
-        error="Error: No entry";
-        continue;
-      }
-      Integer index=directionMap.get(direction.toLowerCase().charAt(0));
-      if (index==null || index==-1) {
-        error="Invalid entry; type \"up\", \"down\", \"right\" or \"left\", (or just \"u\", \"d\", \"r\" or \"l\"):";
-        continue;
-      }
-      if (!directions[index]) {
-        error="Can't go that direction";
-        continue;
-      }
-      switch (index) {
-        case 0: game.playUp(); break;
-        case 1: game.playDown(); break;
-        case 2: game.playLeft(); break;
-        case 3: game.playRight(); break;
-      }
-      placed=true;
-    }
-  }
   private void promptCardRotate() throws Exception {
     String error=null;
     boolean done=false;
     while (!done) {
-      String res=prompt("[R]otate, [S]witch or [ ]: ", error).toLowerCase();
+      String res=prompt("[R]otate, [S]witch or [ ]Accept: ", error).toLowerCase();
       if (res.length()==0)
         done=true;
       else
@@ -114,9 +85,6 @@ public class ConsolePlay {
 
   private String prompt(String p, String error) throws Exception {
     drawGame();
-    System.out.append("Moved: ")
-      .append(String.valueOf(game.getMoved()))
-      .append("  ");
     if (error!=null) System.out.append(error).append("     ");
     System.out.print(p);
     return reader.readLine();
@@ -124,14 +92,17 @@ public class ConsolePlay {
   private void drawGame() throws Exception {
     AsciiBoard.draw(game.getBoard(), System.out);
     Card card=game.getUpCard();
-    if (card!=null)
-      drawUpCard(card);
+    if (card!=null && card.isStrike())
+      System.out.println("******************** STRIKE ********************");
     else
-      System.out.println("\n\n\n");
-    System.out.println("Strikes: "+game.getStrikes()+" / "+game.getStrikeLimit());
-    System.out.println("Keys:    "+game.getKeys()+" / "+game.getKeyLimit());
+      System.out.println("");
+    System.out.append("Strikes: ").append(""+game.getStrikes()).append(" / ").append(""+game.getStrikeLimit()).append("\n");
+    System.out.append("Keys:    ").append(""+game.getKeys()).append(" / ").append(""+game.getKeyLimit()).append("\n");
+    System.out.append("Moved:   ").append(""+game.getMoved()).append("  ");
     System.out.flush();
   }
+
+  /** No longer in use */
   private void drawUpCard(Card card) throws Exception {
     if (card.isStrike()) {
       System.out.println("       ___");

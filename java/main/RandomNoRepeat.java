@@ -40,4 +40,11 @@ public class RandomNoRepeat {
     used[n]=true;
     return n;
   }
+  public int[] fill(int count) {
+    final int[] array=new int[count];
+    for (int i=0; i<array.length; i++)
+      array[i]=next();
+    return array;
+  }
+
 }
