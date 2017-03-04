@@ -163,6 +163,7 @@ public class Game {
   public boolean isWon(){return state==WON;}
   public boolean isLost(){return state==LOST || state==GIVE_UP;}
   public int getStrikes() {return strikes;}
+  public int getKeys() {return keys;}
   public Card getPlacedCard() {
     requireState(CARD_PLACED);
     return board.getCurrentCard();
@@ -173,6 +174,9 @@ public class Game {
   public int getStrikeLimit() {
     return config.STRIKE_LIMIT;
   }
+  public int getKeyLimit() {
+    return config.KEY_COUNT;
+  }
 
   //////////////
   // PRIVATE: //
@@ -182,9 +186,7 @@ public class Game {
     requireState(CARD_UP);
     moved++;
     board.play(upCard, direction);
-    state=board.onFinish()
-      ?(keys==config.KEY_COUNT ?WON :LOST)
-      :CARD_PLACED;
+    state=CARD_PLACED;
     upCard=null;
   }
   private boolean canPlay(byte direction) {

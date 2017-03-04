@@ -1,4 +1,4 @@
 Put on fucking github
-Make last card played print one last line less, to avoid hiccup
-Arbitrary Start and finish locations
+First card is not rotationally optimized
+Do not need to print card between turns, just STRIKE or nothing
 

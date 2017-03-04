@@ -57,7 +57,7 @@ public class ConsolePlay {
     }
     drawGame();
     if (game.isLost()) System.out.print("LOSE");
-    if (game.isWon()) System.out.print("WIN");
+    if (game.isWon()) System.out.print("******* WIN *******");
     if (game.isGiveUp()) System.out.print("Gave up");
   }
 
@@ -129,6 +129,7 @@ public class ConsolePlay {
     else
       System.out.println("\n\n\n");
     System.out.println("Strikes: "+game.getStrikes()+" / "+game.getStrikeLimit());
+    System.out.println("Keys:    "+game.getKeys()+" / "+game.getKeyLimit());
     System.out.flush();
   }
   private void drawUpCard(Card card) throws Exception {

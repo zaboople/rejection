@@ -12,8 +12,8 @@ public class AsciiBoard {
       for (int innerLine=0; innerLine<3; innerLine++) {
         app.append('|');
         for (int c=0; c<width; c++){
-          boolean first=r==0 && c==0;
-          boolean last=r==height-1 && c==width-1;
+          boolean first=board.isStart(r, c);
+          boolean last=!first && board.isFinish(r, c);
           doInnerLine(app, innerLine, board.getCell(r, c), first, last);
         }
         app.append("\n");
@@ -25,9 +25,10 @@ public class AsciiBoard {
       Appendable app, int innerLine, Cell cell,
       boolean veryFirst, boolean veryLast
     ) throws Exception {
+    final char corner=veryFirst || veryLast ?'*' :' ';
     switch (innerLine) {
       case 0:
-        app.append(' ')
+        app.append(corner)
           .append(getEdge(cell, Card::hasPathUp, "| ", "  "));
         break;
       case 1:

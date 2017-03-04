@@ -35,8 +35,6 @@ public class Board {
     this.width=width;
     this.height=height;
     this.cells=new Cell[width * height];
-    this.startPos=0;
-    this.finishPos=cells.length-1;
     for (int i=0; i<cells.length; i++) this.cells[i]=new Cell();
     reset(keys, bonuses);
   }
@@ -45,16 +43,16 @@ public class Board {
   public int[] getKeyCells() {return keyCells;}
   public int[] getBonusCells() {return bonusCells;}
 
-  private int toIndex(int row, int col) {
-    return col+(row*width);
-  }
-
   public Board reset(int keyCount, int bonusCount) {
     for (int i=0; i<cells.length; i++)
       this.cells[i].clear();
     prev=-1;
     current=-1;
     RandomNoRepeat random=new RandomNoRepeat(randomizer, cells.length-2);
+    this.startPos=random.next();
+    getCell(startPos).setUsed();
+    this.finishPos=random.next();
+    getCell(finishPos).setUsed();
     setKeys(fillKeyBonus(random, keyCount));
     setBonus(fillKeyBonus(random, bonusCount));
     return this;
@@ -95,17 +93,14 @@ public class Board {
   public boolean onBonus() {return cells[current].isBonus();}
 
 
-  public int getCurrentRow() {
-    return current / width;
-  }
-  public int getCurrentCol() {
-    return current % width;
-  }
   public boolean onFinish() {
     return current==finishPos;
   }
-  public boolean onStart() {
-    return current==-1 || current==startPos;
+  public boolean isStart(int row, int col) {
+    return toIndex(row, col)==startPos;
+  }
+  public boolean isFinish(int row, int col) {
+    return toIndex(row, col)==finishPos;
   }
 
   public boolean canPlay(byte direction) {
@@ -243,20 +238,32 @@ public class Board {
   }
   private void setKeys(int... cellIndices) {
     keyCells=cellIndices;
-    for (int index: cellIndices)
-      if (!cells[index+1].isEmpty())
-        throw new IllegalStateException("Cell is already used");
-      else
-        cells[index+1].setKey();
+    reserve(Cell::setKey, cellIndices);
   }
   private void setBonus(int... cellIndices) {
     bonusCells=cellIndices;
+    reserve(Cell::setBonus, cellIndices);
+  }
+  private void reserve(java.util.function.Consumer<Cell> cellFunction, int... cellIndices) {
     for (int index: cellIndices)
-      if (!cells[index+1].isEmpty())
-        throw new IllegalStateException("Cell is already used");
+      if (!cells[index].isEmpty())
+        throw new IllegalStateException("Cell is already used "+cells[index]);
       else
-        cells[index+1].setBonus();
+        cellFunction.accept(cells[index]);
   }
 
+  ///////////////////////////
+  // OTHER PRIVATE THINGS: //
+  ///////////////////////////
+
+  private int toIndex(int row, int col) {
+    return col+(row*width);
+  }
+  private int getCurrentRow() {
+    return current / width;
+  }
+  private int getCurrentCol() {
+    return current % width;
+  }
 
 }
