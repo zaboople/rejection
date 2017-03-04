@@ -26,6 +26,7 @@ public class AsciiBoard {
       boolean veryFirst, boolean veryLast
     ) throws Exception {
     final char corner=veryFirst || veryLast ?'*' :' ';
+    final char bottomCorner=veryFirst || veryLast ?'*' :'_';
     switch (innerLine) {
       case 0:
         app.append(corner)
@@ -38,8 +39,9 @@ public class AsciiBoard {
           .append(getEdge(cell, Card::hasPathRight, "-", " "));
         break;
       case 2:
-        app.append('_')
-          .append(getEdge(cell, Card::hasPathDown, "|_", "__"));
+        app.append(bottomCorner)
+          .append(getEdge(cell, Card::hasPathDown, "|", "_"))
+          .append(bottomCorner);
         break;
     }
     app.append("|");

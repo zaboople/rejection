@@ -144,7 +144,7 @@ public class Board {
   }
   public void play(Card card, final byte direction) {
     int target=getTarget(current, direction);
-    if (target<1)
+    if (target<0)
       throw new IllegalStateException("Not a legal card placement");;
     card=getOptimalRotation(card, target, direction);
     setCard(target, card);
@@ -176,7 +176,7 @@ public class Board {
     );
   }
   private byte canPlayTo(int fromPosition, byte direction) {
-    return getTarget(fromPosition, direction)>0 ?direction :(byte)0;
+    return getTarget(fromPosition, direction)>-1 ?direction :(byte)0;
   }
   private int getTarget(int fromPosition, byte direction) {
     int target;

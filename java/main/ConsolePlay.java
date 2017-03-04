@@ -34,6 +34,7 @@ public class ConsolePlay {
   private final BufferedReader reader;
   private final GameConfig config;
   private final String strikeStars;
+  private final StringBuilder outBuffer=new StringBuilder();
   private Game game;
 
   private ConsolePlay(GameConfig config) throws Exception {
@@ -77,9 +78,10 @@ public class ConsolePlay {
       }
     }
     drawGame();
-    if (game.isLost()) System.out.print("LOSE");
-    if (game.isWon()) System.out.print("******* WIN *******");
-    if (game.isGiveUp()) System.out.print("Gave up");
+    if (game.isLost()) outBuffer.append("LOSE");
+    if (game.isWon()) outBuffer.append("******* WIN *******");
+    if (game.isGiveUp()) outBuffer.append("Gave up");
+    flush();
   }
 
   private void promptCardRotate() throws Exception {
@@ -102,21 +104,28 @@ public class ConsolePlay {
 
   private String prompt(String p, String error) throws Exception {
     drawGame();
-    if (error!=null) System.out.append(error).append("     ");
-    System.out.print(p);
+    if (error!=null) outBuffer.append(error).append("     ");
+    outBuffer.append(p);
+    flush();
     return reader.readLine();
   }
   private void drawGame() throws Exception {
-    AsciiBoard.draw(game.getBoard(), System.out);
+    AsciiBoard.draw(game.getBoard(), outBuffer);
     Card card=game.getUpCard();
     if (card!=null && card.isStrike())
-      System.out.append(strikeStars).append(" STRIKE ").append(strikeStars).append("\n");
+      outBuffer.append(strikeStars).append(" STRIKE ").append(strikeStars).append("\n");
     else
-      System.out.println("");
-    System.out.append("Strikes: ").append(""+game.getStrikes()).append(" / ").append(""+game.getStrikeLimit()).append("\n");
-    System.out.append("Keys:    ").append(""+game.getKeys()).append(" / ").append(""+game.getKeyLimit()).append("\n");
-    System.out.append("Moved:   ").append(""+game.getMoved()).append("  ");
+      outBuffer.append("\n");
+    outBuffer.append("Strikes: ").append(""+game.getStrikes()).append(" / ").append(""+game.getStrikeLimit()).append("\n");
+    outBuffer.append("Keys:    ").append(""+game.getKeys()).append(" / ").append(""+game.getKeyLimit()).append("\n");
+    outBuffer.append("Moved:   ").append(""+game.getMoved()).append("  ");
+  }
+
+  private void flush() {
+    System.out.append(outBuffer);
     System.out.flush();
+    outBuffer.setLength(0);
+    System.gc();
   }
 
 }
