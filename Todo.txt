@@ -1,4 +1,6 @@
-Put on fucking github
+Gambling - Double Down before first card, Max bet, initial pool
+Quit (Q)
+Colors
 There is a bug where one down from top left, I played a corner pointing straight up, and it LOST
 Do not need to print card between turns, just STRIKE or nothing
 

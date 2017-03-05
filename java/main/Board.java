@@ -151,9 +151,9 @@ public class Board {
     prev=current;
     current=target;
   }
-  public boolean switchPlay() {
+  public byte switchPlay() {
     if (current==startPos)
-      return false;
+      return -1;
     byte[] toTry;
     if (current==prev+1)
       return trySwitch(Dir.DOWN, Dir.LEFT, Dir.UP);
@@ -211,7 +211,7 @@ public class Board {
       ?target :-1;
   }
 
-  private boolean trySwitch(byte... toTry){
+  private byte trySwitch(byte... toTry){
     Card card=getCard(current);
     for (byte direction: toTry) {
       int target=getTarget(prev, direction);
@@ -220,10 +220,10 @@ public class Board {
         setCard(target, card);
         setCard(current, null);
         current=target;
-        return true;
+        return direction;
       }
     }
-    return false;
+    return -1;
   }
 
   /////////////////////////////

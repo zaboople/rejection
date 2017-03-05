@@ -27,6 +27,7 @@ public class Game {
   private final GameConfig config;
 
   // Stateful variables:
+  private byte prevDirection;
   private Card upCard=null;
   private int state=WAITING;
   private boolean onFirstCard=true;
@@ -84,6 +85,8 @@ public class Game {
   public void playCardWherever() {
     requireState(CARD_UP);
     byte options=board.whereCanIPlayTo();
+    if (prevDirection > 0 && (options & prevDirection)!=0) play(prevDirection);
+    else
     if ((options & Dir.RIGHT)!=0) play(Dir.RIGHT);
     else
     if ((options & Dir.DOWN)!=0) play(Dir.DOWN);
@@ -105,8 +108,9 @@ public class Game {
     moved++;
     board.rotateCard();
   }
-  public boolean switchPlayCard() {
-    return board.switchPlay();
+  public void switchPlayCard() {
+    byte temp=board.switchPlay();
+    if (temp!=0) prevDirection=temp;
   }
   public void finishPlayCard() {
     requireState(CARD_PLACED);
@@ -182,6 +186,7 @@ public class Game {
     requireState(CARD_UP);
     moved++;
     board.play(upCard, direction);
+    prevDirection=direction;
     state=CARD_PLACED;
     upCard=null;
   }
