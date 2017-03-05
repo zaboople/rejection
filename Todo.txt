@@ -1,6 +1,4 @@
-Gambling - Double Down before first card, Max bet, initial pool
-Quit (Q)
+The moved interface is not right. Seems to pump up on first strike. Or just junk it.
 Colors
-There is a bug where one down from top left, I played a corner pointing straight up, and it LOST
-Do not need to print card between turns, just STRIKE or nothing
+
 

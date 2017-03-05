@@ -130,8 +130,10 @@ public class ConsolePlay {
       outBuffer.append("\nPlay again? Enter [Q]uit or [ ] to continue: ");
       flush();
       String s=reader.readLine().trim().toLowerCase();
-      if (s.startsWith("q"))
+      if (s.startsWith("q")){
+
         return false;
+      }
       if (s.equals(""))
         return true;
     }
@@ -148,13 +150,13 @@ public class ConsolePlay {
         game.nextCard();
       }
       else if (game.isWaitingStriked()) {
-        prompt("Strike card hit. Press enter: ", null);
+        prompt("Strike card hit. Press enter: ");
         game.ackStrike();
         game.nextCard();
       }
       else if (game.isCardUp()) {
         if (game.atVeryBeginning()){
-          prompt("Press enter to play first card:", null);
+          promptFirstPlay();
           game.playFirstCard();
         }
         else
@@ -176,11 +178,27 @@ public class ConsolePlay {
     return game.isWon();
   }
 
+  private void promptFirstPlay() throws Exception {
+    if (gamble!=null && gamble.bet<gamble.total){
+      boolean done=false;
+      while (!done) {
+        String s=prompt("Enter [D]ouble down or [ ] to play first card:");
+        if (s.equals(""))
+          done=true;
+        else
+        if (s.startsWith("d")) {
+          done=true;
+          gamble.doubleDown();
+        }
+      }
+    }
+    else
+      prompt("Press enter to play first card:");
+  }
   private void promptCardAction() throws Exception {
-    String error=null;
     boolean done=false;
     while (!done) {
-      String res=prompt("[R]otate, [S]witch, [G]ive up or [ ]Accept: ", error).toLowerCase();
+      String res=prompt("[R]otate, [S]witch, [G]ive up or [ ]Accept: ").trim().toLowerCase();
       if (res.length()==0)
         done=true;
       else
@@ -197,10 +215,13 @@ public class ConsolePlay {
     }
   }
 
-  private String prompt(String p, String error) throws Exception {
-    drawGame();
-    if (error!=null) outBuffer.append(error).append("     ");
+  private String prompt(String p) throws Exception {
+    return prompt(p, true);
+  }
+  private String prompt(String p, boolean drawGame) throws Exception {
+    if (drawGame) drawGame();
     outBuffer.append(p);
+    if (!p.endsWith(" ")) outBuffer.append(" ");
     flush();
     return reader.readLine();
   }
@@ -215,7 +236,8 @@ public class ConsolePlay {
       outBuffer.append("Bet:    $").append(gamble.bet+" of $"+gamble.total).append("\n");
     outBuffer.append("Strikes: ").append(""+game.getStrikes()).append(" / ").append(""+game.getStrikeLimit()).append("\n");
     outBuffer.append("Keys:    ").append(""+game.getKeys()).append(" / ").append(""+game.getKeyLimit()).append("\n");
-    outBuffer.append("Moved:   ").append(""+game.getMoved()).append("  ");
+    // This is broken and who cares anyhow:
+    //outBuffer.append("Moved:   ").append(""+game.getMoved()).append("  ");
   }
 
   private void flush() {

@@ -11,4 +11,8 @@ public class Gamble {
     total+=win ?bet :-bet;
     return total>0;
   }
+  public void doubleDown() {
+    bet=bet*2;
+    if (bet>total) bet=total;
+  }
 }

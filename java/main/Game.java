@@ -105,7 +105,6 @@ public class Game {
 
   public void rotateCard() {
     requireState(CARD_PLACED);
-    moved++;
     board.rotateCard();
   }
   public void switchPlayCard() {
@@ -114,6 +113,8 @@ public class Game {
   }
   public void finishPlayCard() {
     requireState(CARD_PLACED);
+    moved++;
+    System.out.println("Finished playing card");
     if (board.onKey())
       keys++;
     else if (board.onBonus())
@@ -184,7 +185,6 @@ public class Game {
 
   private void play(byte direction) {
     requireState(CARD_UP);
-    moved++;
     board.play(upCard, direction);
     prevDirection=direction;
     state=CARD_PLACED;
