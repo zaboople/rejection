@@ -146,6 +146,12 @@ public class Game {
     state=CARD_PLACED;
     upCard=null;
   }
+  public boolean allCovered() {
+    for (int i=0; i<board.getCellCount(); i++)
+      if (board.getCard(i)==null)
+        return false;
+    return true;
+  }
 
 
   public boolean atVeryBeginning() {return onFirstCard;}
