@@ -7,8 +7,10 @@ public class Gamble {
     this.startWith=start;
     this.total=start;
   }
-  public boolean winOrLose(boolean win){
-    total+=win ?bet :-bet;
+  public boolean winOrLose(boolean win, boolean bonus){
+    total+=win
+      ?(bonus ?bet*10 :bet)
+      :-bet;
     return total>0;
   }
   public void doubleDown() {
