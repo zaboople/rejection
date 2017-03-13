@@ -8,9 +8,19 @@ import java.util.HashMap;
 
 public class ConsolePlay {
 
+  private static class GameResult {
+    final boolean won, bonus;
+    GameResult(boolean won, boolean bonus) {
+      this.won=won;
+      this.bonus=bonus;
+    }
+  }
+
   /////////////////////////////////////////
   // STATIC COMMAND-LINE INITIALIZATION: //
   /////////////////////////////////////////
+
+  private static AsciiBoard boardRender;
 
   public static void main(String[] args) throws Exception {
     if (!go(args)) System.exit(1);
@@ -18,6 +28,7 @@ public class ConsolePlay {
   private static boolean go(String[] args) throws Exception{
     GameConfig config=null;
     Gamble gamble=null;
+    boardRender=new AsciiBoard(System.out, true);
 
     for (int i=0; i<args.length; i++)
       if (args[i].equals("-h") || args[i].equals("--help"))
@@ -97,10 +108,10 @@ public class ConsolePlay {
     while (keepPlaying){
       if (gamble!=null)
         gamble.bet=promptBet();
-      boolean win=playOneGame();
+      GameResult result=playOneGame();
       outBuffer.append("\n");
       if (gamble!=null){
-        keepPlaying=gamble.winOrLose(win);
+        keepPlaying=gamble.winOrLose(result.won, result.bonus);
         outBuffer.append(
           keepPlaying
             ?"\nYou have $"+gamble.total+"\n"
@@ -130,10 +141,8 @@ public class ConsolePlay {
       outBuffer.append("\nPlay again? Enter [Q]uit or [ ] to continue: ");
       flush();
       String s=reader.readLine().trim().toLowerCase();
-      if (s.startsWith("q")){
-
+      if (s.startsWith("q"))
         return false;
-      }
       if (s.equals(""))
         return true;
     }
@@ -143,7 +152,7 @@ public class ConsolePlay {
   // INDIVIDUAL GAME PLAY: //
   ///////////////////////////
 
-  private boolean playOneGame() throws Exception {
+  private GameResult playOneGame() throws Exception {
     game=new Game(config);
     while (!game.isOver()){
       if (game.isWaiting()){
@@ -171,11 +180,17 @@ public class ConsolePlay {
       }
     }
     drawGame();
+
+    GameResult gr=new GameResult(game.isWon(), game.allCovered());
     if (game.isLost()) outBuffer.append("LOSE");
     if (game.isGiveUp()) outBuffer.append(" - Gave up");
-    if (game.isWon())
-      outBuffer.append(gamble == null ?"******* WIN *******" :"$$$$$$$ WIN $$$$$$$");
-    return game.isWon();
+
+    if (game.isWon()) {
+      String stars=gamble==null ?"*******" :"$$$$$$$";
+      String title=gamble!=null && gr.bonus ?" BONUS WIN " :" WIN ";
+      outBuffer.append(stars).append(title).append(stars);
+    }
+    return gr;
   }
 
   private void promptFirstPlay() throws Exception {
@@ -226,18 +241,24 @@ public class ConsolePlay {
     return reader.readLine();
   }
   private void drawGame() throws Exception {
-    AsciiBoard.draw(game.getBoard(), outBuffer);
+    boardRender.draw(game.getBoard(), outBuffer);
     Card card=game.getUpCard();
     if (card!=null && card.isStrike())
       outBuffer.append(strikeStars).append(" STRIKE ").append(strikeStars).append("\n");
     else
       outBuffer.append("\n");
+
+    final int
+      keys=game.getKeys(),
+      keyLimit=game.getKeyLimit(),
+      strikes=game.getStrikes(),
+      strikeLimit=game.getStrikeLimit();
+    outBuffer.append("Keys:    ").append(""+keys).append(" / ").append(""+keyLimit)
+      .append(keys==keyLimit ?" ******\n" :"\n");
+    outBuffer.append("Strikes: ").append(""+strikes).append(" / ").append(""+strikeLimit)
+      .append(strikes==strikeLimit-1 ?" !!!!!!\n" :"\n");
     if (gamble!=null)
       outBuffer.append("Bet:    $").append(gamble.bet+" of $"+gamble.total).append("\n");
-    outBuffer.append("Strikes: ").append(""+game.getStrikes()).append(" / ").append(""+game.getStrikeLimit()).append("\n");
-    outBuffer.append("Keys:    ").append(""+game.getKeys()).append(" / ").append(""+game.getKeyLimit()).append("\n");
-    // This is broken and who cares anyhow:
-    //outBuffer.append("Moved:   ").append(""+game.getMoved()).append("  ");
   }
 
   private void flush() {

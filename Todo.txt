@@ -1,3 +1,5 @@
+There should be an "Are you sure?" on quit.
+  And there should be a prompt() that does not drawGame().
 The moved interface is not right. Seems to pump up on first strike. Or just junk it.
 Colors
 

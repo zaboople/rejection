@@ -66,6 +66,7 @@ public class Board {
   public int[] getBonusCells() {return bonusCells;}
   public Cell getCell(int row, int col) {return getCell(toIndex(row, col));}
   public Cell getCell(int i) {return cells[i];}
+  public int getCellCount() {return cells.length;}
 
   public Card getCard(int row, int col) {
     return getCard(toIndex(row, col));
