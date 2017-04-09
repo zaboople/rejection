@@ -114,7 +114,6 @@ public class Game {
   public void finishPlayCard() {
     requireState(CARD_PLACED);
     moved++;
-    System.out.println("Finished playing card");
     if (board.onKey())
       keys++;
     else if (board.onBonus())
