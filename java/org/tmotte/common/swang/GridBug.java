@@ -1,4 +1,4 @@
-package main.swang;
+package org.tmotte.common.swang;
 import javax.swing.BorderFactory;
 import java.awt.Component;
 import java.awt.Container;

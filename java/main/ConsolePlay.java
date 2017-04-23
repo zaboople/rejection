@@ -1,8 +1,6 @@
 package main;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.io.FileInputStream;
-import java.io.File;
 import java.util.Map;
 import java.util.HashMap;
 
@@ -23,54 +21,9 @@ public class ConsolePlay {
   private static AsciiBoard boardRender;
 
   public static void main(String[] args) throws Exception {
-    if (!go(args)) System.exit(1);
-  }
-  private static boolean go(String[] args) throws Exception{
-    GameConfig config=null;
-    Gamble gamble=null;
-    boardRender=new AsciiBoard(System.out, true);
-
-    for (int i=0; i<args.length; i++)
-      if (args[i].equals("-h") || args[i].equals("--help"))
-        return help(null);
-      else
-      if (args[i].equals("-w") || args[i].equals("--wager")){
-        i++;
-        if (i==args.length)
-          return help("Expected a number");
-        Integer amount;
-        try {amount=Integer.parseInt(args[i]);}
-        catch (Exception e) {return help("Not a parseable number: "+args[i]);}
-        gamble=new Gamble(amount);
-      }
-      else
-      if (args[i].equals("-c") || args[i].equals("--config")){
-        i++;
-        if (i==args.length)
-          return help("Error: Expected a filename");
-        String a=args[i];
-        File file=new File(a);
-        if (!file.exists())
-          return help("Not a file: "+a);
-        try {
-          config=new GameConfig().load(new FileInputStream(file));
-        } catch (Exception e) {
-          return help(e.getMessage());
-        }
-      }
-      else
-        return help("Unexpected: "+args[i]);
-
-    if (config==null)
-      config=new GameConfig();
-
-    new ConsolePlay(config, gamble).play();
-    return true;
-  }
-  private static boolean help(String error) {
-    if (error!=null) System.out.println("Error: "+error);
-    System.out.println("Usage: ConsolePlay [--config <file>] [--wager <amount>]");
-    return error==null;
+    GameConfigSetup setup = new GameConfigSetup();
+    if (!setup.go(args)) System.exit(1);
+    new ConsolePlay(setup.config, setup.gamble).play();
   }
 
   /////////////////////////////
@@ -85,6 +38,7 @@ public class ConsolePlay {
   private Game game;
 
   private ConsolePlay(GameConfig config, Gamble gamble) throws Exception {
+    boardRender=new AsciiBoard(System.out, true);
     this.config=config;
     this.gamble=gamble;
     reader=new BufferedReader(new InputStreamReader(System.in));

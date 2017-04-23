@@ -1,15 +1,17 @@
 package main.swang;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.GraphicsEnvironment;
 import java.awt.Graphics;
+import java.awt.GraphicsEnvironment;
 import java.awt.Insets;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
@@ -25,6 +27,7 @@ import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JColorChooser;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -42,30 +45,41 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import main.Card;
+import org.tmotte.common.swang.GridBug;
+import org.tmotte.common.swang.CurrentOS;
+import org.tmotte.common.swang.KeyMapper;
 
 public class Screen {
 
   private boolean initialized=false;
 
-  private int blackLabelFontSize=14;
+  private int blackLabelFontSize=20;
   private Font blackLabelFont;
 
   private JFrame win;
   private NewCardPanel cardPanel;
   private JLabel
     lblStrikeAlert,
-    lblKeys,
-    lblStrikes,
-    lblBet;
-  private JTextField jtfBetEntry;
 
-  private class BlackLabel extends JLabel {
-    public BlackLabel(String text) {
-      super(text);
-      setForeground(Color.WHITE);
-      setFont(blackLabelFont);
-    }
-  }
+    lblForKeys,
+    lblKeys,
+    lblForStrikes,
+    lblStrikes,
+    lblForBet,
+    lblBet,
+    lblForMove,
+
+    lblWinLose,
+    lblYouHave,
+    lblPlayAgain,
+
+    lblEnterBet
+  ;
+  private JComponent[] allNothings, allTextComps;
+  private int lblNothingIndex=-1;
+  private JTextField jtfBet, jtfMove, jtfPlayAgain;
+  private JPanel pnlPlay, pnlWinLose, pnlPlayAgain, pnlBet;
+  private CurrentOS currentOS;
 
 
   public void show() {
@@ -93,54 +107,109 @@ public class Screen {
   }
 
   private void create(){
+    currentOS=new CurrentOS();
+
     win=new JFrame();
     win.setTitle("Rejection");
-    blackLabelFont=new Font(Font.MONOSPACED, Font.PLAIN, blackLabelFontSize);
+    blackLabelFont=createFont(blackLabelFontSize);
+
     cardPanel=new NewCardPanel(6, 10);
-    cardPanel.setPreferredSize(new Dimension(218, 196));
+    cardPanel.setPreferredSize(new Dimension(10*50, 6*50));
+
+    pnlPlay=newBlackPanel();
+    pnlWinLose=newBlackPanel();
+    pnlPlayAgain=newBlackPanel();
+    pnlBet=newBlackPanel();
+
     lblStrikeAlert=new BlackLabel("STRIKE");
     lblKeys=new BlackLabel(" 0 / 0 ******");
+    lblForKeys=new BlackLabel("Keys:");
+    lblForStrikes=new BlackLabel("Strikes:");
     lblStrikes=new BlackLabel(" 0 / 0 ******");
+    lblForBet=new BlackLabel("Bet:");
     lblBet=new BlackLabel("$0 of $0");
+    lblForMove=new BlackLabel("[R]otate, [S]witch, [G]ive up or [ ]Accept:");
+
+    lblWinLose=new BlackLabel("$$$$$$$ WIN $$$$$$$");
+    lblYouHave=new BlackLabel("You have $1000010000");
+    lblPlayAgain=new BlackLabel("Play again? Enter [Q]uit or [ ] to continue:");
+
+    lblEnterBet=new BlackLabel("Bet for this game, limit $XXXXXX:");
+
+
+    jtfBet=new BlackJTF();
+    jtfBet.setColumns(10);
+    jtfMove=new BlackJTF();
+    jtfMove.setColumns(2);
+    jtfPlayAgain=new BlackJTF();
+    jtfPlayAgain.setColumns(2);
+
+
+    allTextComps=new JComponent[]{
+      lblStrikeAlert, lblKeys, lblForKeys, lblForStrikes, lblStrikes, lblForBet, lblBet, lblForMove,
+      lblWinLose, lblYouHave, lblPlayAgain, lblEnterBet,
+      jtfBet, jtfMove, jtfPlayAgain
+    };
+    allNothings=new JComponent[6];
+    for (int i=0; i<allNothings.length; i++) allNothings[i]=new BlackLabel(" ");
   }
 
+  private Font createFont(int size) {
+    return new Font(Font.MONOSPACED, Font.PLAIN, size);
+  }
+
+  private class BlackLabel extends JLabel {
+    public BlackLabel(String text) {
+      super(text);
+      setForeground(Color.WHITE);
+      setFont(blackLabelFont);
+    }
+  }
+  private class BlackJTF extends JTextField {
+    public BlackJTF() {
+      super();
+      setForeground(Color.WHITE);
+      setFont(blackLabelFont);
+      setBackground(Color.BLACK);
+      setHorizontalAlignment(LEFT);
+      setCaretColor(Color.GRAY);// Leave alone and get no cursor
+    }
+  }
+  private static JPanel newColorPanel(Color c) {
+    JPanel jp=new JPanel();
+    jp.setBackground(c);
+    return jp;
+  }
+  private static JPanel newBlackPanel() {
+    return newColorPanel(Color.BLACK);
+  }
   /////////////
   // LAYOUT: //
   /////////////
 
   private void layout() {
+    win.getContentPane().setBackground(Color.BLACK);
     GridBug gb=new GridBug(win);
     gb
       .gridXY(0)
-      .setInsets(0)
+      .setInsets(5, 5, 0, 5)
       .fill(gb.BOTH)
       .anchor(gb.NORTHWEST)
       .weightXY(1)
-      .addY(layoutMiddle())
+      .addY(layoutTableau())
       .fill(gb.HORIZONTAL)
       .weightXY(1,0)
-      .addY(layoutBottom1());
+      .setInsets(0, 5, 5, 10)
+      .addY(layoutPlay())
+      .addY(layoutWinLose())
+      .addY(layoutPnlBet())
+      ;
     win.pack();
   }
 
 
-  private Container layoutTop() {
-    JPanel jp=new JPanel();
-    GridBug gb=new GridBug(jp);
-    gb.gridXY(0);
-    gb.weightXY(0);
-    gb.fill=gb.BOTH;
-    gb.anchor=gb.NORTHWEST;
-    gb.setInsets(5);
-    gb.insets.top=0;
-
-    return jp;
-  }
-
-  private Container layoutMiddle() {
-    JPanel jp=new JPanel();
-    jp.setBackground(Color.BLACK);
-    return new GridBug(jp)
+  private Container layoutTableau() {
+    return new GridBug(newBlackPanel())
       .insets(9)
       .fill(GridBug.BOTH)
       .weightXY(1)
@@ -149,34 +218,55 @@ public class Screen {
       .getContainer();
   }
 
-  private Container layoutBottom1() {
-    JPanel jp=new JPanel();
-    jp.setBackground(Color.BLACK);
-    return new GridBug(jp)
-      .insets(0, 0, 0, 5)
+  private Container layoutPlay() {
+    return new GridBug(pnlPlay)
+      .insets(0, 0, 0, 0)
       .weightXY(0, 0)
-      .anchor(GridBug.NORTHWEST)
-      .gridWidth(2)
-      .add(lblStrikeAlert)
-      .gridWidth(1)
-      .addY().setX(0).addX(new BlackLabel("Keys:")).weightX(1).add(lblKeys).weightX(0)
-      .addY().setX(0).addX(new BlackLabel("Strikes:")).add(lblStrikes)
-      .addY().setX(0).addX(new BlackLabel("Bet:")).add(lblBet)
+      .anchor(GridBug.WEST)
+      .gridWidth(2).weightX(1).add(lblStrikeAlert).weightX(0).gridWidth(1)
+      .addY().setX(0).addX(lblForKeys).add(lblKeys)
+      .addY().setX(0).addX(lblForStrikes).add(lblStrikes)
+      .addY().setX(0).addX(lblForBet).add(lblBet)
+      .addY().setX(0).gridWidth(2).addX(
+        new GridBug(newBlackPanel())
+          .insets(0)
+          .addX(lblForMove).weightX(1).insetLeft(3).add(jtfMove)
+          .getContainer()
+      )
       .getContainer();
   }
-  private Container getButtonPanel() {
-    JPanel panel=new JPanel();
-    GridBug gb=new GridBug(panel);
-    Insets insets=gb.insets;
-    insets.top=5;
-    insets.bottom=5;
-    insets.left=5;
-    insets.right=5;
 
-    gb.gridx=0;
-    //gb.add(new JButton("FUCKING HELL"));
-    return panel;
+
+  private Container layoutWinLose() {
+    return new GridBug(pnlWinLose)
+      .anchor(GridBug.WEST)
+      .gridWidth(1).weightX(1)
+      .addY(lblWinLose)
+      .addY(allNothings[++lblNothingIndex])
+      .addY(lblYouHave)
+      .addY(allNothings[++lblNothingIndex])
+      .addY(
+        new GridBug(newBlackPanel())
+          .insets(0)
+          .addX(lblPlayAgain).insetLeft(3).add(jtfPlayAgain)
+          .getContainer()
+      )
+      .getContainer();
   }
+
+  private Container layoutPnlBet() {
+    return new GridBug(pnlBet)
+      .insets(0, 0, 0, 0)
+      .anchor(GridBug.WEST)
+      .gridWidth(1).weightX(0).addX(lblEnterBet).weightX(1).insetLeft(3).add(jtfBet)
+      .setX(0).addY().insetLeft(0).gridWidth(2)
+      .addY(allNothings[++lblNothingIndex])
+      .addY(allNothings[++lblNothingIndex])
+      .addY(allNothings[++lblNothingIndex])
+      .addY(allNothings[++lblNothingIndex])
+      .getContainer();
+  }
+
 
   /////////////
   // LISTEN: //
@@ -184,18 +274,38 @@ public class Screen {
 
   private void listen() {
     //win.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-    win.addKeyListener(new KeyAdapter() {
-      public void keyPressed(KeyEvent e){
-        if (e.getKeyCode()==KeyEvent.VK_ESCAPE){
+    KeyAdapter allListener=new KeyAdapter(){
+      @Override public void keyPressed(KeyEvent e){
+        if (e.getKeyCode()==KeyEvent.VK_W && KeyMapper.modifierPressed(e, currentOS)){
           System.exit(0);
         }
       }
+    };
+    win.addKeyListener(allListener);
+    win.addComponentListener(new ComponentAdapter() {
+    	@Override public void componentResized(ComponentEvent e) {
+        handleResizeWindow();
+      }
     });
+    jtfMove.addKeyListener(allListener);
     win.addWindowListener(new WindowAdapter() {
       public void windowClosing(WindowEvent e){
         System.exit(0);
       }
     });
+  }
+
+  private void handleResizeWindow() {
+    int fontSize=win.getHeight() / 50;
+    if (fontSize==0) fontSize=1;
+    Font font=createFont(fontSize);
+    if (!font.equals(blackLabelFont)) {
+      blackLabelFont=font;
+      for (JComponent comp: allTextComps)
+        comp.setFont(font);
+      for (JComponent comp: allNothings)
+        comp.setFont(font);
+    }
   }
 
   /////////////
