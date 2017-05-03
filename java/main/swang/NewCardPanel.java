@@ -17,7 +17,7 @@ public class NewCardPanel extends JPanel {
 
   private static Dimension[] fontOffsets={null, null, null, null};
   private static short fontIndexKey=0, fontIndexBonus=1, fontIndexStart=2, fontIndexFinish=3;
-  private static final int dashCount=4;
+  private static final int dashCount=5;
   private static final int dashFactor=1;
 
   private Board board;
@@ -51,7 +51,7 @@ public class NewCardPanel extends JPanel {
     if (dim.width!=currWidth || dim.height!=currHeight)
       recomputeLayoutOnResize(dim);
     if (!graphics.getFont().equals(font))
-      recomputeFontOnResize(graphics);
+      recomputeTextOffset(graphics);
 
     ((Graphics2D)graphics).setRenderingHint(
       RenderingHints.KEY_TEXT_ANTIALIASING,
@@ -61,7 +61,7 @@ public class NewCardPanel extends JPanel {
     graphics.fillRect(0, 0, dim.width, dim.height);
 
 
-    /*** DRAW BORDER DECORATION: ***/
+    // DRAW BORDER DECORATION:
     graphics.setColor(Color.GRAY);
 
     // Column lines:
@@ -93,22 +93,6 @@ public class NewCardPanel extends JPanel {
     }
 
     // DRAW CARDS & BACKGROUND:
-    FontMetrics metrics=graphics.getFontMetrics();
-    Rectangle2D
-      ktangle=metrics.getStringBounds("K", graphics),
-      btangle=metrics.getStringBounds("B", graphics);
-    LineMetrics lmk=metrics.getLineMetrics("K", graphics);
-    Rectangle2D realTextSize=font.createGlyphVector(metrics.getFontRenderContext(), "K").getVisualBounds();
-    int
-      kxOff=(int)Math.round(
-        ( ((double)cardWide)-realTextSize.getWidth() )
-        / 2.0f
-      ),
-      kyOff=(int)Math.round(
-        (cardHigh+realTextSize.getHeight()) / 2.0
-      );
-
-
     graphics.setColor(Color.GREEN);
     int top=border+dashWide;
     for (int r=0; r<rows; r++){
@@ -126,6 +110,10 @@ public class NewCardPanel extends JPanel {
         else
         if (board.isFinish(r, c))
           drawCenter(graphics, Color.MAGENTA, left, top, fontOffsets[fontIndexFinish], "F");
+        Card card=board.getCard(r, c);
+        if (card!=null) {
+          System.out.println("BANG!"+r+" "+c);
+        }
         left+=cardWide+dashWide;
       }
       top+=cardHigh+dashWide;
@@ -154,7 +142,7 @@ public class NewCardPanel extends JPanel {
     currWidth=dim.width;
 
     // Decoration space and leftovers:
-    dashWide=((dim.width+dim.height) / 256) * dashFactor;
+    dashWide=((dim.width+dim.height) / 384) * dashFactor;
     if (dashWide==0) dashWide=1;
     border=dashWide;
     int highExtra=(border*2)+((rows+1)*dashWide);
@@ -175,7 +163,7 @@ public class NewCardPanel extends JPanel {
     actualHigh=highExtra+playHigh;
 
     // Dashes:
-    gapLen=Math.round(cardHigh / 24f);
+    gapLen=Math.round(cardHigh / 20f);
     if (gapLen<2) gapLen=2;
     float fdashCount=dashCount;
     wDashLen=(int)Math.round(
@@ -212,25 +200,29 @@ public class NewCardPanel extends JPanel {
    * Another variation, just setting arrangements for the center
    * text where it exists (K, B, S, F)
    */
-  private void recomputeFontOnResize(Graphics graphics) {
+  private void recomputeTextOffset(Graphics graphics) {
     graphics.setFont(font);
     FontMetrics metrics=graphics.getFontMetrics();
-    fontOffsets[fontIndexKey]=recomputeFontOnResize(metrics, "K");
-    fontOffsets[fontIndexBonus]=recomputeFontOnResize(metrics, "B");
-    fontOffsets[fontIndexStart]=recomputeFontOnResize(metrics, "S");
-    fontOffsets[fontIndexFinish]=recomputeFontOnResize(metrics, "F");
+    fontOffsets[fontIndexKey]=recomputeTextOffset(metrics, "K");
+    fontOffsets[fontIndexBonus]=recomputeTextOffset(metrics, "B");
+    fontOffsets[fontIndexStart]=recomputeTextOffset(metrics, "S");
+    fontOffsets[fontIndexFinish]=recomputeTextOffset(metrics, "F");
   }
-  private Dimension recomputeFontOnResize(FontMetrics metrics, String center) {
+  private Dimension recomputeTextOffset(FontMetrics metrics, String center) {
+    //Subtract? Add? Note: For offLeft, we get the proper left; but for offTop, we have this problem
+    //of rendering from the "baseline", which is between the dangling down-line of a "p" and the
+    //circley bit abovewards.
     Rectangle2D realTextSize=font.createGlyphVector(metrics.getFontRenderContext(), center).getVisualBounds();
     int
-      kxOff=(int)Math.round(
-        ( ((double)cardWide)-realTextSize.getWidth() )
+      offLeft=(int)Math.round(
+        (cardWide-realTextSize.getWidth())
         / 2.0f
       ),
-      kyOff=(int)Math.round(
-        (cardHigh+realTextSize.getHeight()) / 2.0
+      offTop=(int)Math.round(
+        (cardHigh+realTextSize.getHeight())
+        / 2.0f
       );
-    return new Dimension(kxOff, kyOff);
+    return new Dimension(offLeft, offTop);
   }
 
 }

@@ -44,7 +44,7 @@ public class ScreenPlay implements ScreenPlayInterface {
     if (amount > gamble.getTotal())
       return;
     gamble.setBet(amount);
-    screen.setStatePlay(gamble, game.getBoard());
+    playFirstCard();
   }
 
   public @Override void moveEntered(String move) {
@@ -66,7 +66,12 @@ public class ScreenPlay implements ScreenPlayInterface {
     if (gamble!=null)
       screen.setStateBet(gamble.getTotal());
     else
-      screen.setStatePlay(gamble, game.getBoard());
+      playFirstCard();
+  }
+  private void playFirstCard() {
+    game.nextCard();
+    game.playFirstCard();
+    screen.setStatePlay(gamble, game.getBoard());
   }
 
 }
