@@ -15,6 +15,7 @@ public class Cell {
   public void setKey(){key=true;}
   public void setBonus(){bonus=true;}
   public void setCard(Card card){this.card=card;}
+
   public void setUsed(){this.used=true;}
   public void clear(){
     this.key=false;

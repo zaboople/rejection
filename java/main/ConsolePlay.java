@@ -68,7 +68,7 @@ public class ConsolePlay {
         keepPlaying=gamble.winOrLose(result.won, result.bonus);
         outBuffer.append(
           keepPlaying
-            ?"\nYou have $"+gamble.total+"\n"
+            ?"\nYou have $"+gamble.getTotal()+"\n"
             :"\nYou lost everything.\n"
         );
         flush();
@@ -80,12 +80,12 @@ public class ConsolePlay {
   private int promptBet() throws Exception {
     int bet=0;
     while (bet==0){
-      outBuffer.append("Enter bet for this game, limit $"+gamble.total+": $");
+      outBuffer.append("Enter bet for this game, limit $"+gamble.getTotal()+": $");
       flush();
       String s=reader.readLine();
       try {bet=Integer.parseInt(s);}
       catch (Exception e) {}
-      if (bet<=0 || bet>gamble.total)
+      if (bet<=0 || bet>gamble.getTotal())
         bet=0;
     }
     return bet;
@@ -148,7 +148,7 @@ public class ConsolePlay {
   }
 
   private void promptFirstPlay() throws Exception {
-    if (gamble!=null && gamble.bet<gamble.total){
+    if (gamble!=null && gamble.bet<gamble.getTotal()){
       boolean done=false;
       while (!done) {
         String s=prompt("Enter [D]ouble down or [ ] to play first card:");
@@ -212,7 +212,7 @@ public class ConsolePlay {
     outBuffer.append("Strikes: ").append(""+strikes).append(" / ").append(""+strikeLimit)
       .append(strikes==strikeLimit-1 ?" !!!!!!\n" :"\n");
     if (gamble!=null)
-      outBuffer.append("Bet:    $").append(gamble.bet+" of $"+gamble.total).append("\n");
+      outBuffer.append("Bet:    $").append(gamble.bet+" of $"+gamble.getTotal()).append("\n");
   }
 
   private void flush() {

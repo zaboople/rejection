@@ -1,8 +1,8 @@
 package main;
 public class Gamble {
   final int startWith;
-  int total;
-  int bet;
+  private int total;
+  public int bet;
   public Gamble(int start) {
     this.startWith=start;
     this.total=start;
@@ -16,5 +16,14 @@ public class Gamble {
   public void doubleDown() {
     bet=bet*2;
     if (bet>total) bet=total;
+  }
+  public int getTotal() {
+    return total;
+  }
+  public int getBet() {
+    return bet;
+  }
+  public void setBet(int bet) {
+    this.bet=bet;
   }
 }

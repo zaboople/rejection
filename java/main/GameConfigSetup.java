@@ -3,8 +3,8 @@ import java.io.File;
 import java.io.FileInputStream;
 
 public class GameConfigSetup {
-  GameConfig config=null;
-  Gamble gamble=null;
+  public GameConfig config;
+  public Gamble gamble;
 
   private static boolean help(String error) {
     if (error!=null) System.out.println("Error: "+error);
@@ -14,8 +14,10 @@ public class GameConfigSetup {
 
   public boolean go(String[] args) throws Exception{
     for (int i=0; i<args.length; i++)
-      if (args[i].equals("-h") || args[i].equals("--help"))
-        return help(null);
+      if (args[i].equals("-h") || args[i].equals("--help")){
+        help(null);
+        return false;
+      }
       else
       if (args[i].equals("-w") || args[i].equals("--wager")){
         i++;
