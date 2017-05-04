@@ -1,9 +1,18 @@
-package main;
+package main.cmdline;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.Map;
 import java.util.HashMap;
+import main.Card;
+import main.Game;
+import main.GameConfig;
+import main.GameConfigSetup;
+import main.Gamble;
 
+/**
+ * Primary control system for the command-line game. Most of the
+ * core game state mgmt remains in the Game class.
+ */
 public class ConsolePlay {
 
   private static class GameResult {
@@ -42,15 +51,13 @@ public class ConsolePlay {
     this.config=config;
     this.gamble=gamble;
     reader=new BufferedReader(new InputStreamReader(System.in));
-    {
-      int strikeStarCount=
-        (
-          (config.BOARD_WIDTH * 4) + 1 - " STRIKE ".length()
-        ) / 2;
-      StringBuilder sb=new StringBuilder(strikeStarCount);
-      for (int i=0; i<strikeStarCount; i++) sb.append("*");
-      strikeStars=sb.toString();
-    }
+    int strikeStarCount=
+      (
+        (config.BOARD_WIDTH * 4) + 1 - " STRIKE ".length()
+      ) / 2;
+    StringBuilder sb=new StringBuilder(strikeStarCount);
+    for (int i=0; i<strikeStarCount; i++) sb.append("*");
+    strikeStars=sb.toString();
   }
 
   ///////////////////////////

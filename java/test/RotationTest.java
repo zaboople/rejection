@@ -1,5 +1,5 @@
 package test;
-import main.AsciiBoard;
+import main.cmdline.AsciiBoard;
 import main.Board;
 import main.Card;
 import main.Dir;

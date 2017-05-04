@@ -44,17 +44,28 @@ public class ScreenPlay implements ScreenPlayInterface {
     if (amount > gamble.getTotal())
       return;
     gamble.setBet(amount);
-    playFirstCard();
+    startPlay();
   }
 
   public @Override void moveEntered(String move) {
-    move=move.toLowerCase();
-    if (move.equals("s")){
+    if (game.isWaitingStriked()) {
+      game.ackStrike();
+      playNext();
     }
     else
-    if (move.equals("r")) {
+    if (game.atVeryBeginning()) {
+      game.playFirstCard();
+      playNext();
     }
-    screen.setStateNextMove();
+    else {
+      move=move.toLowerCase();
+      if (move.equals("s")){
+      }
+      else
+      if (move.equals("r")) {
+      }
+      screen.setStateNextMove();
+    }
   }
 
   //////////////////////
@@ -66,12 +77,48 @@ public class ScreenPlay implements ScreenPlayInterface {
     if (gamble!=null)
       screen.setStateBet(gamble.getTotal());
     else
-      playFirstCard();
+      startPlay();
   }
-  private void playFirstCard() {
-    game.nextCard();
-    game.playFirstCard();
+  private void startPlay() {
     screen.setStatePlay(gamble, game.getBoard());
+    playNext();
+  }
+  private void playNext() {
+    if (game.isOver()){
+      System.out.println("OVER!");
+    }
+    else if (game.isWaitingStriked()) {
+      screen.setStrikes(game.getStrikes(), game.getStrikeLimit());
+      screen.setStateStrike();
+    }
+    else if (game.isWaiting()){
+      game.nextCard();
+      playNext();
+    }
+    /*
+    else if (game.isCardUp()) {
+      if (game.atVeryBeginning())
+        screen.promptFirstPlay();
+      else
+      if (!game.tryPlayCard())
+        game.playCardWherever();
+    }
+    else if (game.isCardPlaced()) {
+      Card card=game.getPlacedCard();
+      promptCardAction();
+      if (!game.isGiveUp())
+        game.finishPlayCard();
+    }
+
+
+    game.nextCard();
+    while (game.isWaitingStriked()) {
+      game.ackStrike();
+      game.nextCard();
+    }
+    game.playFirstCard();
+    */
+
   }
 
 }

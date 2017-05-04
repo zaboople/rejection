@@ -1,6 +1,12 @@
-package main;
-
+package main.cmdline;
+import main.Board;
+import main.Card;
+import main.Cell;
 import java.util.function.Function;
+
+/**
+ * Handles all the text-based board layout for command-line play.
+ */
 public class AsciiBoard {
 
   private final Terminal out;

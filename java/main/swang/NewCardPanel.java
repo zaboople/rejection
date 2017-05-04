@@ -15,10 +15,14 @@ import main.Cell;
 
 public class NewCardPanel extends JPanel {
 
-  private static Dimension[] fontOffsets={null, null, null, null};
-  private static short fontIndexKey=0, fontIndexBonus=1, fontIndexStart=2, fontIndexFinish=3;
   private static final int dashCount=5;
   private static final int dashFactor=1;
+
+  /////////////////////////
+  //                     //
+  // INSTANCE VARIABLES: //
+  //                     //
+  /////////////////////////
 
   private Board board;
   private Font font;
@@ -27,14 +31,27 @@ public class NewCardPanel extends JPanel {
   private int
     dashWide, wDashLen, vDashLen,
     border, cardWide, cardHigh,
-    actualWide, actualHigh, gapLen;
-  private int[]
+    actualWide, actualHigh, gapLen,
+    vPathLeftOff, vPathHigh, vPathDownTopOff,
+    hPathTopOff, hPathWide, hPathRightOff;
+
+  private final short fontIndexKey=0, fontIndexBonus=1, fontIndexStart=2, fontIndexFinish=3;
+  private final Dimension[] fontOffsets={null, null, null, null};
+
+  private final int[]
     wDashFixups=new int[dashCount],
     vDashFixups=new int[dashCount];
+
+  /////////////////////
+  //                 //
+  // INITIALIZATION: //
+  //                 //
+  /////////////////////
 
   public void setFont(Font font) {
     this.font=font;
   }
+
   public void setBoard(Board b) {
     this.board=b;
     this.rows=b.getHeight();
@@ -42,28 +59,47 @@ public class NewCardPanel extends JPanel {
     this.repaint();
   }
 
+  ////////////////////////
+  //                    //
+  // EVENTS (ONLY ONE): //
+  //                    //
+  ////////////////////////
 
   @Override public void paintComponent(Graphics graphics) {
     super.paintComponent(graphics);
-    if (board==null) return;
+    if (board==null || font==null) return;
 
+    // Recompute stuff:
     final Dimension dim=getSize();
-    if (dim.width!=currWidth || dim.height!=currHeight)
+    boolean layoutChanged=dim.width!=currWidth || dim.height!=currHeight,
+            fontChanged=!graphics.getFont().equals(font);
+    if (layoutChanged)
       recomputeLayoutOnResize(dim);
-    if (!graphics.getFont().equals(font))
+    if (fontChanged)
       recomputeTextOffset(graphics);
+    if (fontChanged || layoutChanged)
+      recomputePathOffsets();
 
+    // Draw stuff:
     ((Graphics2D)graphics).setRenderingHint(
       RenderingHints.KEY_TEXT_ANTIALIASING,
       RenderingHints.VALUE_TEXT_ANTIALIAS_OFF
     );
     graphics.setColor(Color.BLACK);
     graphics.fillRect(0, 0, dim.width, dim.height);
+    drawBorders(graphics);
+    drawCardsAndSymbols(graphics);
+  }
 
+  //////////////
+  //          //
+  // DRAWING: //
+  //          //
+  //////////////
 
-    // DRAW BORDER DECORATION:
+  /** Draws the playing grid. */
+  private void drawBorders(Graphics graphics) {
     graphics.setColor(Color.GRAY);
-
     // Column lines:
     for (int x=border; x<actualWide; x+=(dashWide+cardWide)){
       int yStart=border+dashWide;
@@ -77,7 +113,6 @@ public class NewCardPanel extends JPanel {
         yStart+=dashWide+cardHigh;
       }
     }
-
     // Row lines:
     for (int y=border; y<actualHigh; y+=(dashWide+cardHigh)){
       int pos=border+dashWide;
@@ -91,28 +126,37 @@ public class NewCardPanel extends JPanel {
         pos+=dashWide+cardWide;
       }
     }
+  }
 
-    // DRAW CARDS & BACKGROUND:
-    graphics.setColor(Color.GREEN);
+  /** Draws the cards played so far and background symbols for keys/bonuses/start/finish. */
+  private void drawCardsAndSymbols(Graphics graphics) {
     int top=border+dashWide;
     for (int r=0; r<rows; r++){
       int left=border+dashWide;
       for (int c=0; c<cols; c++) {
         Cell cell=board.getCell(r, c);
         if (cell.isKey())
-          drawCenter(graphics, Color.GREEN, left, top, fontOffsets[fontIndexKey], "K");
+          drawCenterSymbol(graphics, Color.GREEN, left, top, fontOffsets[fontIndexKey], "K");
         else
         if (cell.isBonus())
-          drawCenter(graphics, Color.BLUE, left, top, fontOffsets[fontIndexBonus], "B");
+          drawCenterSymbol(graphics, Color.BLUE, left, top, fontOffsets[fontIndexBonus], "B");
         else
         if (board.isStart(r, c))
-          drawCenter(graphics, Color.MAGENTA, left, top, fontOffsets[fontIndexStart], "S");
+          drawCenterSymbol(graphics, Color.MAGENTA, left, top, fontOffsets[fontIndexStart], "S");
         else
         if (board.isFinish(r, c))
-          drawCenter(graphics, Color.MAGENTA, left, top, fontOffsets[fontIndexFinish], "F");
+          drawCenterSymbol(graphics, Color.MAGENTA, left, top, fontOffsets[fontIndexFinish], "F");
         Card card=board.getCard(r, c);
         if (card!=null) {
-          System.out.println("BANG!"+r+" "+c);
+          graphics.setColor(Color.WHITE);
+          if (card.hasPathUp())
+            graphics.fillRect(left+vPathLeftOff, top+dashWide, dashWide, vPathHigh);
+          if (card.hasPathDown())
+            graphics.fillRect(left+vPathLeftOff, top+vPathDownTopOff, dashWide, vPathHigh);
+          if (card.hasPathLeft())
+            graphics.fillRect(left+dashWide, top+hPathTopOff, hPathWide, dashWide);
+          if (card.hasPathRight())
+            graphics.fillRect(left+hPathRightOff, top+hPathTopOff, hPathWide, dashWide);
         }
         left+=cardWide+dashWide;
       }
@@ -120,9 +164,11 @@ public class NewCardPanel extends JPanel {
     }
   }
 
-  private void drawCenter(Graphics graphics, Color color, int left, int top, Dimension offsets, String achar) {
+  private void drawCenterSymbol(
+      Graphics graphics, Color color, int left, int top, Dimension offsets, String achar
+    ) {
     graphics.setColor(color);
-    graphics.drawString(achar, left+offsets.width, top +offsets.height);
+    graphics.drawString(achar, left+offsets.width, top+offsets.height);
   }
 
 
@@ -197,8 +243,8 @@ public class NewCardPanel extends JPanel {
   }
 
   /**
-   * Another variation, just setting arrangements for the center
-   * text where it exists (K, B, S, F)
+   * Another variation: When font changes, configure the center
+   * text background where it exists (K, B, S, F).
    */
   private void recomputeTextOffset(Graphics graphics) {
     graphics.setFont(font);
@@ -213,16 +259,34 @@ public class NewCardPanel extends JPanel {
     //of rendering from the "baseline", which is between the dangling down-line of a "p" and the
     //circley bit abovewards.
     Rectangle2D realTextSize=font.createGlyphVector(metrics.getFontRenderContext(), center).getVisualBounds();
+    float fcardWide=cardWide, fcardHigh=cardHigh;
     int
       offLeft=(int)Math.round(
-        (cardWide-realTextSize.getWidth())
+        (fcardWide-realTextSize.getWidth())
         / 2.0f
       ),
       offTop=(int)Math.round(
-        (cardHigh+realTextSize.getHeight())
+        (fcardHigh+realTextSize.getHeight())
         / 2.0f
       );
     return new Dimension(offLeft, offTop);
+  }
+
+  /**
+   * Finally, if font _or_ playing area size changes, we need to recompute the
+   * card path drawing.
+   */
+  private void recomputePathOffsets() {
+    int avgFontHigh=fontOffsets[fontIndexKey].height,
+        avgFontWide=fontOffsets[fontIndexKey].width; //DERP
+
+    vPathLeftOff=Math.round((cardWide-dashWide)/2.0f);
+    vPathHigh=cardHigh - (avgFontHigh + (dashWide * 2));
+    vPathDownTopOff=avgFontHigh + dashWide;
+
+    hPathTopOff=Math.round((cardHigh-dashWide)/2.0f);
+    hPathWide=Math.round((cardWide - (avgFontWide + (dashWide * 2)))/2.0f);
+    hPathRightOff=dashWide + hPathWide + avgFontWide;
   }
 
 }

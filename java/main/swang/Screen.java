@@ -112,6 +112,9 @@ public class Screen {
     win.toFront();
   }
 
+  public void setStrikes(int strikes, int limit) {
+    lblStrikes.setText(String.format(" %d / %d %s", strikes, limit, limit-strikes<=1 ?"*****" :""));
+  }
 
   public void setStateBet(int available) {
     lblEnterBet1.setText(String.format("Enter bet for this round, limit $%d:", available));
@@ -119,13 +122,19 @@ public class Screen {
     jtfBet.requestFocusInWindow();
   }
   public void setStatePlay(Gamble gamble, Board board) {
+    lblStrikes.setText(" ");
     lblBetPrefix.setText(gamble==null ?" " :"Bet:");
     lblBet.setText(gamble==null ?" " :String.format("%d of %d", gamble.getBet(), gamble.getTotal()));
     setVisiblePanel(pnlPlay);
     cardPanel.setBoard(board);
     jtfMove.requestFocusInWindow();
   }
+  public void setStateStrike() {
+    lblStrikeAlert.setText("   !!! STRIKE !!!");
+    lblForMove.setText("Strike hit. Press enter:");
+  }
   public void setStateNextMove() {
+    lblStrikeAlert.setText(" ");
     String s=jtfMove.getText();
     if (s==null || s.length()==0)
       return;
@@ -342,7 +351,6 @@ public class Screen {
       for (JComponent comp: allNothings)
         comp.setFont(font);
       cardPanel.setFont(font);
-      cardPanel.repaint();
     }
   }
 

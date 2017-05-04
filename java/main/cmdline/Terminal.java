@@ -1,5 +1,9 @@
-package main;
-public class Terminal {
+package main.cmdline;
+
+/**
+ * Mainly provides support for classical TTY colors on unix-like systems.
+ */
+class Terminal {
 
   public final static String
     FG_RED      ="31",
