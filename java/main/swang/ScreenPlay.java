@@ -53,7 +53,7 @@ public class ScreenPlay implements ScreenPlayInterface {
       playNext();
     }
     else
-    if (game.atVeryBeginning()) {
+    if (game.firstCardUp()) {
       game.playFirstCard();
       playNext();
     }

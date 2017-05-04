@@ -125,7 +125,7 @@ public class ConsolePlay {
         game.nextCard();
       }
       else if (game.isCardUp()) {
-        if (game.atVeryBeginning()){
+        if (game.firstCardUp()){
           promptFirstPlay();
           game.playFirstCard();
         }
@@ -208,15 +208,15 @@ public class ConsolePlay {
       outBuffer.append(strikeStars).append(" STRIKE ").append(strikeStars).append("\n");
     else
       outBuffer.append("\n");
-
     final int
-      keys=game.getKeys(),
+      keys=game.getKeysCrossed(),
       keyLimit=game.getKeyLimit(),
       strikes=game.getStrikes(),
       strikeLimit=game.getStrikeLimit();
-    outBuffer.append("Keys:    ").append(""+keys).append(" / ").append(""+keyLimit)
-      .append(keys==keyLimit ?" ******\n" :"\n");
-    outBuffer.append("Strikes: ").append(""+strikes).append(" / ").append(""+strikeLimit)
+    outBuffer
+      .append("Keys:    ").append(""+keys).append(" / ").append(""+keyLimit)
+      .append(keys==keyLimit ?" ******\n" :"\n")
+      .append("Strikes: ").append(""+strikes).append(" / ").append(""+strikeLimit)
       .append(strikes==strikeLimit-1 ?" !!!!!!\n" :"\n");
     if (gamble!=null)
       outBuffer.append("Bet:    $").append(gamble.bet+" of $"+gamble.getTotal()).append("\n");

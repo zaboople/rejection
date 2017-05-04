@@ -27,16 +27,18 @@ public class Game {
   private final GameConfig config;
 
   // Stateful variables:
+  private GameState gameState;
   private byte prevDirection;
   private Card upCard=null;
   private int state=WAITING;
-  private boolean onFirstCard=true;
+  private boolean firstCardUp=true;
   private int strikes=0;
-  private int keys=0;
-  private int moved=0;
+  private int keysCrossed=0;
+  private int moves=0;
 
   public Game(GameConfig c) {
     this.config=c;
+    this.gameState=new GameState(config.STRIKE_LIMIT, config.KEYS);
     board=new Board(randomizer, c.BOARD_WIDTH, c.BOARD_HEIGHT).reset(c.KEYS, c.BONUSES);
     config.ensureEnoughCards();
     deck=new Deck(
@@ -113,13 +115,13 @@ public class Game {
   }
   public void finishPlayCard() {
     requireState(CARD_PLACED);
-    moved++;
+    moves++;
     if (board.onKey())
-      keys++;
+      keysCrossed++;
     else if (board.onBonus())
       strikes=strikes==0 ?0 :strikes-1;
     if (board.onFinish())
-      state=keys==config.KEYS ?WON :LOST;
+      state=keysCrossed==config.KEYS ?WON :LOST;
     else
     if (board.whereCanIPlayTo()==0)
       state=LOST;
@@ -138,10 +140,10 @@ public class Game {
 
   public void playFirstCard() {
     requireState(CARD_UP);
-    if (!onFirstCard) throw new IllegalStateException("Not on very first");
+    if (!firstCardUp) throw new IllegalStateException("Not on very first");
     board.playFirstCard(upCard);
-    moved++;
-    onFirstCard=false;
+    moves++;
+    firstCardUp=false;
     state=CARD_PLACED;
     upCard=null;
   }
@@ -153,7 +155,7 @@ public class Game {
   }
 
 
-  public boolean atVeryBeginning() {return onFirstCard;}
+  public boolean firstCardUp() {return firstCardUp;}
   public boolean canPlayUp() {return canPlay(Dir.UP);}
   public boolean canPlayDown() {return canPlay(Dir.DOWN);}
   public boolean canPlayLeft() {return canPlay(Dir.LEFT);}
@@ -169,13 +171,10 @@ public class Game {
   public boolean isWon(){return state==WON;}
   public boolean isLost(){return state==LOST || state==GIVE_UP;}
   public int getStrikes() {return strikes;}
-  public int getKeys() {return keys;}
+  public int getKeysCrossed() {return keysCrossed;}
   public Card getPlacedCard() {
     requireState(CARD_PLACED);
     return board.getCurrentCard();
-  }
-  public int getMoved() {
-    return moved;
   }
   public int getStrikeLimit() {
     return config.STRIKE_LIMIT;
@@ -196,7 +195,7 @@ public class Game {
     upCard=null;
   }
   private boolean canPlay(byte direction) {
-    if (onFirstCard) return false;
+    if (firstCardUp) return false;
     requireState(CARD_UP);
     return board.canPlay(direction);
   }
