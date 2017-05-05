@@ -104,7 +104,6 @@ public class ScreenPlay implements ScreenPlayInterface {
         game.playCardWherever();
     }
     else if (game.isCardPlaced()) {
-      Card card=game.getPlacedCard();
       promptCardAction();
       if (!game.isGiveUp())
         game.finishPlayCard();

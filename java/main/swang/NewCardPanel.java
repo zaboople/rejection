@@ -10,7 +10,7 @@ import java.awt.geom.Rectangle2D;
 import java.awt.font.LineMetrics;
 import javax.swing.JPanel;
 import main.Card;
-import main.Board;
+import main.BoardView;
 import main.Cell;
 
 public class NewCardPanel extends JPanel {
@@ -24,7 +24,7 @@ public class NewCardPanel extends JPanel {
   //                     //
   /////////////////////////
 
-  private Board board;
+  private BoardView board;
   private Font font;
   private int rows=2, cols=2;
   private int currHeight=-1, currWidth=-1;
@@ -52,7 +52,7 @@ public class NewCardPanel extends JPanel {
     this.font=font;
   }
 
-  public void setBoard(Board b) {
+  public void setBoard(BoardView b) {
     this.board=b;
     this.rows=b.getHeight();
     this.cols=b.getWidth();

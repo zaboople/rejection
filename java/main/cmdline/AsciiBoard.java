@@ -1,5 +1,5 @@
 package main.cmdline;
-import main.Board;
+import main.BoardView;
 import main.Card;
 import main.Cell;
 import java.util.function.Function;
@@ -14,7 +14,7 @@ public class AsciiBoard {
     this.out=new Terminal(out, colored);
   }
 
-  public void draw(Board board, Appendable app) throws Exception {
+  public void draw(BoardView board, Appendable app) throws Exception {
     final int width=board.getWidth(), height=board.getHeight();
     out.append(' ');
     for (int i=0; i<width -1 + (width*3); i++) out.append('_');

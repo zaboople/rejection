@@ -45,7 +45,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import main.Card;
-import main.Board;
+import main.BoardView;
 import main.Gamble;
 import org.tmotte.common.swang.GridBug;
 import org.tmotte.common.swang.CurrentOS;
@@ -121,7 +121,7 @@ public class Screen {
     setVisiblePanel(pnlBet);
     jtfBet.requestFocusInWindow();
   }
-  public void setStatePlay(Gamble gamble, Board board) {
+  public void setStatePlay(Gamble gamble, BoardView board) {
     lblStrikes.setText(" ");
     lblBetPrefix.setText(gamble==null ?" " :"Bet:");
     lblBet.setText(gamble==null ?" " :String.format("%d of %d", gamble.getBet(), gamble.getTotal()));

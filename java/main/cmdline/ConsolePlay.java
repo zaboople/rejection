@@ -134,7 +134,6 @@ public class ConsolePlay {
           game.playCardWherever();
       }
       else if (game.isCardPlaced()) {
-        Card card=game.getPlacedCard();
         promptCardAction();
         if (!game.isGiveUp())
           game.finishPlayCard();
@@ -203,8 +202,7 @@ public class ConsolePlay {
   }
   private void drawGame() throws Exception {
     boardRender.draw(game.getBoard(), outBuffer);
-    Card card=game.getUpCard();
-    if (card!=null && card.isStrike())
+    if (game.isWaitingStriked())
       outBuffer.append(strikeStars).append(" STRIKE ").append(strikeStars).append("\n");
     else
       outBuffer.append("\n");

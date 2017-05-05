@@ -7,9 +7,9 @@ import java.util.function.Supplier;
 
 /**
  * Represents Board state; makes very little effort to enforce
- * game rules.
+ * game rules. Exposed as public only for testing.
  */
-public class Board {
+public class Board implements BoardView { //Fixme use Override keyword
 
   /////////////////////
   // INITIALIZATION: //
@@ -60,22 +60,23 @@ public class Board {
   // PUBLIC GAME PLAY, READ-ONLY STATE: //
   ////////////////////////////////////////
 
-  public int getWidth() {return width;}
-  public int getHeight() {return height;}
-  public int[] getKeyCells() {return keyCells;}
-  public int[] getBonusCells() {return bonusCells;}
-  public Cell getCell(int row, int col) {return getCell(toIndex(row, col));}
-  public Cell getCell(int i) {return cells[i];}
-  public int getCellCount() {return cells.length;}
-
-  public Card getCard(int row, int col) {
+  public @Override int getWidth() {return width;}
+  public @Override int getHeight() {return height;}
+  public @Override Cell getCell(int row, int col) {return getCell(toIndex(row, col));}
+  public @Override Card getCard(int row, int col) {
     return getCard(toIndex(row, col));
   }
+  public @Override boolean isStart(int row, int col) {
+    return toIndex(row, col)==startPos;
+  }
+  public @Override boolean isFinish(int row, int col) {
+    return toIndex(row, col)==finishPos;
+  }
+
+  public Cell getCell(int i) {return cells[i];}
+  public int getCellCount() {return cells.length;}
   public Card getCard(int index) {
     return getCell(index).getCard();
-  }
-  public Card getCurrentCard() {
-    return getCard(current);
   }
 
   public int getDistanceTo(int index) {
@@ -90,12 +91,6 @@ public class Board {
   public boolean onBonus() {return cells[current].isBonus();}
   public boolean onFinish() {
     return current==finishPos;
-  }
-  public boolean isStart(int row, int col) {
-    return toIndex(row, col)==startPos;
-  }
-  public boolean isFinish(int row, int col) {
-    return toIndex(row, col)==finishPos;
   }
 
   public boolean canPlay(byte direction) {
@@ -260,6 +255,10 @@ public class Board {
   private int getCurrentCol() {
     return current % width;
   }
+  private Card getCurrentCard() {
+    return getCard(current);
+  }
+
   /** This is only exposed for testing. */
   public Board setCard(int row, int col, Card card) {
     return setCard(toIndex(row, col), card);

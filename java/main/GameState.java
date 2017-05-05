@@ -6,6 +6,8 @@ package main;
  * can change that easily enough if we ever want to).
  */
 public class GameState {
+
+  // Package private constants exposed for Game class:
   static final int
     WAITING=0,
     WAITING_STRIKED=1,
@@ -25,14 +27,12 @@ public class GameState {
   private int keysCrossed=0;
 
   // PACKAGE-PRIVATE METHODS FOR GAME CLASS ONLY:
-  // The modification methods currently act like we're immutable; we aren't, of
-  // course, because we don't really need to be, but it's easy to change now if we want to.
 
   GameState(int strikeLimit, int keys) {
     this.strikeLimit=strikeLimit;
     this.keys=keys;
   }
-  GameState setState(int state) {
+  GameState set(int state) {
     this.state=state;
     return this;
   }
@@ -40,7 +40,18 @@ public class GameState {
     firstCardUp=false;
     return this;
   }
-
+  GameState addStrike() {
+    strikes++;
+    return this;
+  }
+  GameState removeStrike() {
+    strikes--;
+    return this;
+  }
+  GameState addKeysCrossed() {
+    keysCrossed++;
+    return this;
+  }
   void require(int shouldBe) {
     if (state!=shouldBe)
       throw new IllegalStateException("State should be: "+shouldBe+"; is: "+state);
@@ -50,8 +61,16 @@ public class GameState {
 
   /** Means we are waiting to play first card onto the board. */
   public boolean firstCardUp() {return firstCardUp;}
-  public int getStrikes() {return strikes;}
-  public int getKeysCrossed() {return keysCrossed;}
+  public int getStrikeCount() {return strikes;}
   public int getStrikeLimit() {return strikeLimit;}
+  public int getKeysCrossed() {return keysCrossed;}
   public int getKeys() {return keys;}
+  public boolean isCardUp(){return state==CARD_UP;}
+  public boolean isCardPlaced(){return state==CARD_PLACED;}
+  public boolean isWaiting(){return state==WAITING;}
+  public boolean isWaitingStriked(){return state==WAITING_STRIKED;}
+  public boolean isOver()  {return state==WON || state==LOST || state==GIVE_UP;}
+  public boolean isWon()   {return state==WON;}
+  public boolean isLost()  {return state==LOST || state==GIVE_UP;}
+  public boolean isGiveUp(){return state==GIVE_UP;}
 }
