@@ -13,6 +13,9 @@ public class Gamble {
       :-bet;
     return total>0;
   }
+  public boolean canDoubleDown() {
+    return bet<total;
+  }
   public void doubleDown() {
     bet=bet*2;
     if (bet>total) bet=total;
