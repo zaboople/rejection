@@ -365,7 +365,6 @@ public class Screen {
   }
 
   private void listen() {
-    //win.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
     KeyAdapter allListener=new KeyAdapter(){
       @Override public void keyReleased(KeyEvent e){
         Component comp=e.getComponent();
@@ -376,13 +375,10 @@ public class Screen {
         if (comp==jtfBet && keyCode==KeyEvent.VK_ENTER)
           watcher.betEntered(jtfBet.getText());
         else
-        if (comp==jtfMove)
-          // This _only_ works if we watch keyReleased & not keyPressed;
-          // when the watcher calls us back we need to select-all on the
-          // jftMove textbox.
+        if (comp==jtfMove && textActuallyEntered(keyCode, jtfMove))
           watcher.moveEntered(jtfMove.getText());
         else
-        if (comp==jtfPlayAgain)
+        if (comp==jtfPlayAgain && textActuallyEntered(keyCode, jtfPlayAgain))
           watcher.playAgainEntered(jtfPlayAgain.getText());
       }
     };
@@ -400,6 +396,14 @@ public class Screen {
         System.exit(0);
       }
     });
+  }
+
+  ////////////////////////
+  // PRIVATE UTILITIES: //
+  ////////////////////////
+
+  private boolean textActuallyEntered(int keyCode, JTextField entryBox) {
+    return keyCode==KeyEvent.VK_ENTER || !"".equals(entryBox.getText().trim());
   }
 
   private void handleResizeWindow() {
