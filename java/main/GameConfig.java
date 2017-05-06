@@ -16,8 +16,8 @@ public class GameConfig {
   public int
     BOARD_WIDTH=8,
     BOARD_HEIGHT=8,
-    STRIKE_CARDS=4,
-    STRIKE_LIMIT=3,
+    STRIKE_CARDS=411,
+    STRIKE_LIMIT=5,
     KEYS=4,
     BONUSES=6,
     CARD_CORNERS=24,

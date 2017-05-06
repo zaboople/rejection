@@ -121,19 +121,18 @@ public class ConsolePlay {
       }
       else if (game.isWaitingStriked()) {
         prompt("Strike card hit. Press enter: ");
-        game.ackStrike();
-        game.nextCard();
+        game.ackStrikeNextCard();
       }
-      else if (game.isCardUp()) {
-        if (game.firstCardUp()){
-          promptFirstPlay();
-          game.playFirstCard();
-        }
-        else
-        if (!game.tryPlayCard())
-          game.playCardWherever();
+      else
+      if (game.firstCardUp()){
+        promptFirstPlay();
+        game.playFirstCard();
       }
-      else if (game.isCardPlaced()) {
+      else
+      if (game.isCardUp())
+        game.playCardWherever();
+      else
+      if (game.isCardPlaced()) {
         promptCardAction();
         if (!game.isGiveUp())
           game.finishPlayCard();
@@ -154,7 +153,7 @@ public class ConsolePlay {
   }
 
   private void promptFirstPlay() throws Exception {
-    if (gamble!=null && gamble.bet<gamble.getTotal()){
+    if (gamble!=null && gamble.canDoubleDown()){
       boolean done=false;
       while (!done) {
         String s=prompt("Enter [D]ouble down or [ ] to play first card:");

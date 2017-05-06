@@ -47,6 +47,7 @@ import javax.swing.event.ListSelectionListener;
 import main.Card;
 import main.BoardView;
 import main.Gamble;
+import main.GameState;
 import org.tmotte.common.swang.GridBug;
 import org.tmotte.common.swang.CurrentOS;
 import org.tmotte.common.swang.KeyMapper;
@@ -66,6 +67,7 @@ public class Screen {
   }
 
   private ScreenPlayInterface watcher;
+  private GameState gameState;
   private boolean initialized=false;
 
   private int blackLabelFontSize=20;
@@ -94,7 +96,7 @@ public class Screen {
   private JComponent[] allNothings, allTextComps, allJTFs, textPanels;
   private int lblNothingIndex=-1;
   private JTextField jtfBet, jtfMove, jtfPlayAgain;
-  private JPanel pnlPlay, pnlWinLose, pnlPlayAgain, pnlBet;
+  private JPanel pnlPlay, pnlWinLose, pnlBet;
   private CurrentOS currentOS;
 
   Screen(ScreenPlayInterface watcher) {
@@ -105,22 +107,86 @@ public class Screen {
     init();
     pnlPlay.setVisible(false);
     pnlWinLose.setVisible(false);
-    pnlPlayAgain.setVisible(false);
     pnlBet.setVisible(false);
     watcher.init(this);
     win.setVisible(true);
     win.toFront();
   }
 
-  public void setStrikes(int strikes, int limit) {
-    lblStrikes.setText(String.format(" %d / %d %s", strikes, limit, limit-strikes<=1 ?"*****" :""));
+  public void setBoard(BoardView board)  {
+    cardPanel.setBoard(board);
   }
-
   public void setStateBet(int available) {
     lblEnterBet1.setText(String.format("Enter bet for this round, limit $%d:", available));
     setVisiblePanel(pnlBet);
     jtfBet.requestFocusInWindow();
   }
+
+  public void setGameState(GameState state, Gamble gamble) {
+    this.gameState=state;
+    System.out.println("FUDGE"+state);
+
+    // Key & Strike count/limit:
+    {
+      int
+        count=state.getStrikeCount(),
+        limit=state.getStrikeLimit();
+      String text=String.format(" %d / %d %s", count, limit, limit-count<=1 ?"*****" :"");
+      if (!text.equals(lblStrikes.getText()))
+        lblStrikes.setText(text);
+    }
+    {
+      int
+        count=state.getKeysCrossed(),
+        limit=state.getKeys();
+      String text=String.format(" %d / %d %s", count, limit, limit-count<=1 ?"*****" :"");
+      if (!text.equals(lblKeys.getText()))
+        lblKeys.setText(text);
+    }
+
+    if (state.isOver()) {
+      if (state.isWon())
+        lblWinLose.setText(gamble==null ?"******* WIN *******" :"$$$$$$$ WIN $$$$$$$");
+      else {
+        lblWinLose.setText("LOSE");
+        if (gameState.getStrikeCount()==gameState.getStrikeLimit())
+          setStrikeAlert();
+      }
+      lblYouHave.setText(gamble==null ?" " :String.format("You have $%d", gamble.getTotal()));
+      setVisiblePanel(pnlWinLose);
+      jtfPlayAgain.requestFocusInWindow();
+    }
+    else
+    if (state.isWaitingStriked()) {
+      setStrikeAlert();
+      lblForMove.setText("Strike hit. Press enter:");
+      setVisiblePanel(pnlPlay);
+      jtfMove.requestFocusInWindow();
+    }
+    else
+    if (state.firstCardUp()) {
+      lblStrikeAlert.setText(" ");
+      setVisiblePanel(pnlPlay);
+      lblForMove.setText(
+        gamble!=null && gamble.canDoubleDown()
+          ?"Enter [D]ouble down or [ ] to play first card:"
+          :"Press enter [ ] to play first card:"
+      );
+      selectAll(jtfMove);
+      lblStrikeAlert.setText(" ");
+      jtfMove.requestFocusInWindow();
+    }
+    else
+    if (state.isCardPlaced()) {
+      String lblText="[R]otate, [S]witch, [G]ive up or [ ]Accept:";
+      if (!lblText.equals(lblForMove.getText()))
+        lblForMove.setText(lblText);
+      setVisiblePanel(pnlPlay);
+      jtfMove.requestFocusInWindow();
+    }
+
+  }
+
   public void setStatePlay(Gamble gamble, BoardView board) {
     lblStrikes.setText(" ");
     lblBetPrefix.setText(gamble==null ?" " :"Bet:");
@@ -129,16 +195,15 @@ public class Screen {
     cardPanel.setBoard(board);
     jtfMove.requestFocusInWindow();
   }
-  public void setStateStrike() {
+
+  private void setStrikeAlert() {
     lblStrikeAlert.setText("   !!! STRIKE !!!");
-    lblForMove.setText("Strike hit. Press enter:");
   }
-  public void setStateNextMove() {
-    lblStrikeAlert.setText(" ");
-    String s=jtfMove.getText();
+  private static void selectAll(JTextField jtf) {
+    String s=jtf.getText();
     if (s==null || s.length()==0)
       return;
-    jtfMove.select(0, s.length());
+    jtf.select(0, s.length());
   }
 
 
@@ -168,7 +233,6 @@ public class Screen {
 
     pnlPlay=newBlackPanel();
     pnlWinLose=newBlackPanel();
-    pnlPlayAgain=newBlackPanel();
     pnlBet=newBlackPanel();
 
     lblStrikeAlert=new BlackLabel("STRIKE");
@@ -202,7 +266,7 @@ public class Screen {
     allNothings=new JComponent[6];
     for (int i=0; i<allNothings.length; i++) allNothings[i]=new BlackLabel(" ");
     allJTFs=new JComponent[]{jtfBet, jtfMove, jtfPlayAgain};
-    textPanels=new JComponent[]{pnlPlay, pnlWinLose, pnlPlayAgain, pnlBet};
+    textPanels=new JComponent[]{pnlPlay, pnlWinLose, pnlBet};
   }
 
   private Font createFont(int size) {
@@ -312,16 +376,17 @@ public class Screen {
         if (keyCode==KeyEvent.VK_W && KeyMapper.modifierPressed(e, currentOS))
           System.exit(0);
         else
-        if (keyCode==KeyEvent.VK_ENTER){
-          if (comp==jtfBet)
-            watcher.betEntered(jtfBet.getText());
-        }
+        if (comp==jtfBet && keyCode==KeyEvent.VK_ENTER)
+          watcher.betEntered(jtfBet.getText());
         else
         if (comp==jtfMove)
           // This _only_ works if we watch keyReleased & not keyPressed;
           // when the watcher calls us back we need to select-all on the
           // jftMove textbox.
           watcher.moveEntered(jtfMove.getText());
+        else
+        if (comp==jtfPlayAgain)
+          watcher.playAgainEntered(jtfPlayAgain.getText());
       }
     };
     win.addKeyListener(allListener);

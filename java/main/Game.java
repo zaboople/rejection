@@ -63,21 +63,6 @@ public class Game {
       state.set(CARD_UP);
   }
 
-  public boolean tryPlayCard() {
-    state.require(CARD_UP);
-    byte options=board.whereCanIPlayTo();
-    boolean played=true;
-    if ((options ^ Dir.RIGHT)==0) play(Dir.RIGHT);
-    else
-    if ((options ^ Dir.DOWN)==0) play(Dir.DOWN);
-    else
-    if ((options ^ Dir.UP)==0) play(Dir.UP);
-    else
-    if ((options ^ Dir.LEFT)==0) play(Dir.LEFT);
-    else
-      played=false;
-    return played;
-  }
   public void playCardWherever() {
     state.require(CARD_UP);
     byte options=board.whereCanIPlayTo();
@@ -128,14 +113,16 @@ public class Game {
     else
       state.set(WAITING);
   }
-  public Game ackStrike() {
+  public void ackStrike() {
     state.require(WAITING_STRIKED);
     state.set(WAITING);
-    return this;
   }
-  public Game giveUp() {
+  public void ackStrikeNextCard() {
+    ackStrike();
+    nextCard();
+  }
+  public void giveUp() {
     state.set(GIVE_UP);
-    return this;
   }
 
   public void playFirstCard() {

@@ -26,6 +26,10 @@ public class GameState {
   private int strikes=0;
   private int keysCrossed=0;
 
+  public @Override String toString() {
+    return state+" "+firstCardUp+" "+strikes+"/"+strikeLimit+" "+keysCrossed+"/"+keys;
+  }
+
   // PACKAGE-PRIVATE METHODS FOR GAME CLASS ONLY:
 
   GameState(int strikeLimit, int keys) {
@@ -45,7 +49,7 @@ public class GameState {
     return this;
   }
   GameState removeStrike() {
-    strikes--;
+    if (strikes>0) strikes--;
     return this;
   }
   GameState addKeysCrossed() {
@@ -60,7 +64,7 @@ public class GameState {
   // PUBLIC METHODS
 
   /** Means we are waiting to play first card onto the board. */
-  public boolean firstCardUp() {return firstCardUp;}
+  public boolean firstCardUp() {return state==CARD_UP && firstCardUp;}
   public int getStrikeCount() {return strikes;}
   public int getStrikeLimit() {return strikeLimit;}
   public int getKeysCrossed() {return keysCrossed;}
