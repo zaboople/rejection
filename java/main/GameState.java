@@ -9,25 +9,25 @@ public class GameState {
 
   // Package private constants exposed for Game class:
   static final int
-    WAITING=0,
-    WAITING_STRIKED=1,
-    CARD_UP=2,
-    CARD_PLACED=3,
-    LOST=4,
-    WON=5,
-    GIVE_UP=6;
+    GAME_START=1,
+    WAITING=2,
+    WAITING_STRIKED=4,
+    CARD_UP=8,
+    CARD_PLACED=16,
+    LOST=32,
+    WON=64,
+    GIVE_UP=128;
 
   // Main state:
-  private int state=WAITING;
+  private int state=GAME_START;
 
-  // Rest of state; arguably firstCardUp should be part of our "main" state variable, but whatever:
-  private boolean firstCardUp=true;
+  // Rest of state:
   private final int strikeLimit, keys;
   private int strikes=0;
   private int keysCrossed=0;
 
   public @Override String toString() {
-    return state+" "+firstCardUp+" "+strikes+"/"+strikeLimit+" "+keysCrossed+"/"+keys;
+    return state+" "+strikes+"/"+strikeLimit+" "+keysCrossed+"/"+keys;
   }
 
   // PACKAGE-PRIVATE METHODS FOR GAME CLASS ONLY:
@@ -38,10 +38,6 @@ public class GameState {
   }
   GameState set(int state) {
     this.state=state;
-    return this;
-  }
-  GameState setFirstCardPlayed() {
-    firstCardUp=false;
     return this;
   }
   GameState addStrike() {
@@ -56,19 +52,19 @@ public class GameState {
     keysCrossed++;
     return this;
   }
-  void require(int shouldBe) {
-    if (state!=shouldBe)
-      throw new IllegalStateException("State should be: "+shouldBe+"; is: "+state);
+  void require(int shouldBeOneOf) {
+    if ((state & shouldBeOneOf)==0)
+      throw new IllegalStateException("State should be one of: "+shouldBeOneOf+"; is: "+state);
   }
 
   // PUBLIC METHODS
 
   /** Means we are waiting to play first card onto the board. */
-  public boolean firstCardUp() {return state==CARD_UP && firstCardUp;}
   public int getStrikeCount() {return strikes;}
   public int getStrikeLimit() {return strikeLimit;}
   public int getKeysCrossed() {return keysCrossed;}
   public int getKeys() {return keys;}
+  public boolean isGameStart(){return state==GAME_START;}
   public boolean isCardUp(){return state==CARD_UP;}
   public boolean isCardPlaced(){return state==CARD_PLACED;}
   public boolean isWaiting(){return state==WAITING;}

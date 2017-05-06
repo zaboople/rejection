@@ -144,27 +144,7 @@ public class Screen {
         lblKeys.setText(text);
     }
 
-    if (state.isOver()) {
-      if (state.isWon())
-        lblWinLose.setText(gamble==null ?"******* WIN *******" :"$$$$$$$ WIN $$$$$$$");
-      else {
-        lblWinLose.setText("LOSE");
-        if (gameState.getStrikeCount()==gameState.getStrikeLimit())
-          setStrikeAlert();
-      }
-      lblYouHave.setText(gamble==null ?" " :String.format("You have $%d", gamble.getTotal()));
-      setVisiblePanel(pnlWinLose);
-      jtfPlayAgain.requestFocusInWindow();
-    }
-    else
-    if (state.isWaitingStriked()) {
-      setStrikeAlert();
-      lblForMove.setText("Strike hit. Press enter:");
-      setVisiblePanel(pnlPlay);
-      jtfMove.requestFocusInWindow();
-    }
-    else
-    if (state.firstCardUp()) {
+    if (state.isGameStart()) {
       lblStrikeAlert.setText(" ");
       setVisiblePanel(pnlPlay);
       lblForMove.setText(
@@ -177,12 +157,35 @@ public class Screen {
       jtfMove.requestFocusInWindow();
     }
     else
+    if (state.isWaitingStriked()) {
+      setStrikeAlert();
+      lblForMove.setText("Strike hit. Press enter:");
+      setVisiblePanel(pnlPlay);
+      selectAll(jtfMove);
+      jtfMove.requestFocusInWindow();
+    }
+    else
     if (state.isCardPlaced()) {
       String lblText="[R]otate, [S]witch, [G]ive up or [ ]Accept:";
       if (!lblText.equals(lblForMove.getText()))
         lblForMove.setText(lblText);
       setVisiblePanel(pnlPlay);
+      selectAll(jtfMove);
       jtfMove.requestFocusInWindow();
+    }
+    else
+    if (state.isOver()) {
+      if (state.isWon())
+        lblWinLose.setText(gamble==null ?"******* WIN *******" :"$$$$$$$ WIN $$$$$$$");
+      else {
+        lblWinLose.setText("LOSE");
+        if (gameState.getStrikeCount()==gameState.getStrikeLimit())
+          setStrikeAlert();
+      }
+      lblYouHave.setText(gamble==null ?" " :String.format("You have $%d", gamble.getTotal()));
+      setVisiblePanel(pnlWinLose);
+      selectAll(jtfPlayAgain);
+      jtfPlayAgain.requestFocusInWindow();
     }
 
   }

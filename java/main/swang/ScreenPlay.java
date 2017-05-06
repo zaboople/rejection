@@ -3,7 +3,12 @@ import main.GameConfigSetup;
 import main.GameConfig;
 import main.Gamble;
 import main.Game;
+import main.GameState;
 
+/**
+ * Screen play attempts to control as much of the interaction as possible
+ * although Screen really ends up being the mirror to it.
+ */
 public class ScreenPlay implements ScreenPlayInterface {
   public static void main(String[] args) throws Exception {
     GameConfigSetup setup=new GameConfigSetup();
@@ -53,29 +58,31 @@ public class ScreenPlay implements ScreenPlayInterface {
   public @Override void moveEntered(String move) {
     move=move.toLowerCase().trim();
     System.out.println("MOVE "+move);
-    if (game.isWaiting()) {
-      nextCard();
-      screen.setGameState(game.getState(), gamble);
-    }
-    else
-    if (game.isWaitingStriked()) {
-      game.ackStrike();
-      nextCard();
-      screen.setGameState(game.getState(), gamble);
-    }
-    if (game.firstCardUp()) {
+    GameState state=game.getState();
+    if (state.isGameStart()) {
       boolean doubled="d".equals(move);
       boolean valid=doubled || "".equals(move) || gamble==null;
       if (gamble!=null && gamble.canDoubleDown() && doubled)
         gamble.doubleDown();
       if (valid)
-        game.playFirstCard();
-      screen.setGameState(game.getState(), gamble);
+        nextCard();
+      screen.setGameState(state, gamble);
+    }
+    else
+    if (game.isWaiting()) {
+      nextCard();
+      screen.setGameState(state, gamble);
+    }
+    else
+    if (game.isWaitingStriked()) {
+      game.ackStrike();
+      nextCard();
+      screen.setGameState(state, gamble);
     }
     else
     if (game.isCardUp()) {
       game.playCardWherever();
-      screen.setGameState(game.getState(), gamble);
+      screen.setGameState(state, gamble);
     }
     else
     if (game.isCardPlaced()) {
@@ -92,7 +99,7 @@ public class ScreenPlay implements ScreenPlayInterface {
         game.finishPlayCard();
         nextCard();
       }
-      screen.setGameState(game.getState(), gamble);
+      screen.setGameState(state, gamble);
     }
   }
 
@@ -121,9 +128,9 @@ public class ScreenPlay implements ScreenPlayInterface {
   }
 
   private void nextCard() {
-    if (game.isWaiting()) {
+    if (game.isWaiting() || game.isGameStart()) {
       game.nextCard();
-      if (game.isCardUp() && !game.firstCardUp())
+      if (game.isCardUp())
         game.playCardWherever();
     }
   }

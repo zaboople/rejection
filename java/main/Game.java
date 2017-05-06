@@ -3,6 +3,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.security.SecureRandom;
+import static main.GameState.GAME_START;
 import static main.GameState.WAITING;
 import static main.GameState.WAITING_STRIKED;
 import static main.GameState.CARD_UP;
@@ -50,7 +51,7 @@ public class Game {
   }
 
   public void nextCard() {
-    state.require(WAITING);
+    state.require(WAITING | GAME_START);
     upCard=deck.next();
     if (upCard.isStrike()){
       state.addStrike();
@@ -65,18 +66,24 @@ public class Game {
 
   public void playCardWherever() {
     state.require(CARD_UP);
-    byte options=board.whereCanIPlayTo();
-    if (prevDirection > 0 && (options & prevDirection)!=0) play(prevDirection);
-    else
-    if ((options & Dir.RIGHT)!=0) play(Dir.RIGHT);
-    else
-    if ((options & Dir.DOWN)!=0) play(Dir.DOWN);
-    else
-    if ((options & Dir.UP)!=0) play(Dir.UP);
-    else
-    if ((options & Dir.LEFT)!=0) play(Dir.LEFT);
-    else
-      throw new IllegalStateException("Invalid play options: "+options);
+    if (board.hasCurrent()) {
+      byte options=board.whereCanIPlayTo();
+      if (prevDirection > 0 && (options & prevDirection)!=0) play(prevDirection);
+      else
+      if ((options & Dir.RIGHT)!=0) play(Dir.RIGHT);
+      else
+      if ((options & Dir.DOWN)!=0) play(Dir.DOWN);
+      else
+      if ((options & Dir.UP)!=0) play(Dir.UP);
+      else
+      if ((options & Dir.LEFT)!=0) play(Dir.LEFT);
+      else
+        throw new IllegalStateException("Invalid play options: "+options);
+    }
+    else {
+      board.playFirstCard(upCard);
+      setPlaced();
+    }
   }
 
   public void playUp() {play(Dir.UP);}
@@ -125,15 +132,6 @@ public class Game {
     state.set(GIVE_UP);
   }
 
-  public void playFirstCard() {
-    state.require(CARD_UP);
-    if (!state.firstCardUp()) throw new IllegalStateException("Not on very first");
-    board.playFirstCard(upCard);
-    moves++;
-    state.setFirstCardPlayed();
-    state.set(CARD_PLACED);
-    upCard=null;
-  }
   public boolean allCovered() {
     for (int i=0; i<board.getCellCount(); i++)
       if (board.getCard(i)==null)
@@ -155,11 +153,12 @@ public class Game {
   public int getKeysCrossed() {return state.getKeysCrossed();}
   public int getStrikeLimit() {return state.getStrikeLimit();}
   public int getKeyLimit() {return state.getKeys();}
-  public boolean firstCardUp() {return state.firstCardUp();}
-  public boolean isCardUp(){return state.isCardUp();}
-  public boolean isCardPlaced(){return state.isCardPlaced();}
+
+  public boolean isGameStart(){return state.isGameStart();}
   public boolean isWaiting(){return state.isWaiting();}
   public boolean isWaitingStriked(){return state.isWaitingStriked();}
+  public boolean isCardUp(){return state.isCardUp();}
+  public boolean isCardPlaced(){return state.isCardPlaced();}
   public boolean isOver() {return state.isOver();}
   public boolean isGiveUp(){return state.isGiveUp();}
   public boolean isWon(){return state.isWon();}
@@ -173,11 +172,14 @@ public class Game {
     state.require(CARD_UP);
     board.play(upCard, direction);
     prevDirection=direction;
+    setPlaced();
+  }
+  private void setPlaced() {
     state.set(CARD_PLACED);
     upCard=null;
   }
   private boolean canPlay(byte direction) {
-    if (state.firstCardUp()) return false;
+    if (!board.hasCurrent()) return false;
     state.require(CARD_UP);
     return board.canPlay(direction);
   }

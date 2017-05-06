@@ -116,17 +116,17 @@ public class ConsolePlay {
   private GameResult playOneGame() throws Exception {
     game=new Game(config);
     while (!game.isOver()){
+      if (game.isGameStart()){
+        promptFirstPlay();
+        game.nextCard();
+      }
+      else
       if (game.isWaiting()){
         game.nextCard();
       }
       else if (game.isWaitingStriked()) {
         prompt("Strike card hit. Press enter: ");
-        game.ackStrikeNextCard();
-      }
-      else
-      if (game.firstCardUp()){
-        promptFirstPlay();
-        game.playFirstCard();
+        game.ackStrike();
       }
       else
       if (game.isCardUp())
@@ -200,16 +200,20 @@ public class ConsolePlay {
     return reader.readLine();
   }
   private void drawGame() throws Exception {
-    boardRender.draw(game.getBoard(), outBuffer);
-    if (game.isWaitingStriked())
-      outBuffer.append(strikeStars).append(" STRIKE ").append(strikeStars).append("\n");
-    else
-      outBuffer.append("\n");
     final int
       keys=game.getKeysCrossed(),
       keyLimit=game.getKeyLimit(),
       strikes=game.getStrikes(),
       strikeLimit=game.getStrikeLimit();
+    boardRender.draw(game.getBoard(), outBuffer);
+
+    // On this if condition, the latter case in the || is that we lost on strikes
+    // so we've gone past the "struck" state to Lose:
+    if (game.isWaitingStriked() || (game.isLost() && strikes==strikeLimit))
+      outBuffer.append(strikeStars).append(" STRIKE ").append(strikeStars).append("\n");
+    else
+      outBuffer.append("\n");
+
     outBuffer
       .append("Keys:    ").append(""+keys).append(" / ").append(""+keyLimit)
       .append(keys==keyLimit ?" ******\n" :"\n")

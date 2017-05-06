@@ -92,6 +92,9 @@ public class Board implements BoardView { //Fixme use Override keyword
   public boolean onFinish() {
     return current==finishPos;
   }
+  public boolean hasCurrent() {
+    return current!=-1;
+  }
 
   public boolean canPlay(byte direction) {
     return getTarget(current, direction) > 0;
