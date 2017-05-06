@@ -54,8 +54,10 @@ public class NewCardPanel extends JPanel {
 
   public void setBoard(BoardView b) {
     this.board=b;
-    this.rows=b.getHeight();
-    this.cols=b.getWidth();
+    if (b!=null) {
+      this.rows=b.getHeight();
+      this.cols=b.getWidth();
+    }
     this.repaint();
   }
 
@@ -66,11 +68,18 @@ public class NewCardPanel extends JPanel {
   ////////////////////////
 
   @Override public void paintComponent(Graphics graphics) {
+    // Rudimentary initialization:
     super.paintComponent(graphics);
+    final Dimension dim=getSize();
+    ((Graphics2D)graphics).setRenderingHint(
+      RenderingHints.KEY_TEXT_ANTIALIASING,
+      RenderingHints.VALUE_TEXT_ANTIALIAS_OFF
+    );
+    graphics.setColor(Color.BLACK);
+    graphics.fillRect(0, 0, dim.width, dim.height);
     if (board==null || font==null) return;
 
     // Recompute stuff:
-    final Dimension dim=getSize();
     boolean layoutChanged=dim.width!=currWidth || dim.height!=currHeight,
             fontChanged=!graphics.getFont().equals(font);
     if (layoutChanged)
@@ -81,12 +90,6 @@ public class NewCardPanel extends JPanel {
       recomputePathOffsets();
 
     // Draw stuff:
-    ((Graphics2D)graphics).setRenderingHint(
-      RenderingHints.KEY_TEXT_ANTIALIASING,
-      RenderingHints.VALUE_TEXT_ANTIALIAS_OFF
-    );
-    graphics.setColor(Color.BLACK);
-    graphics.fillRect(0, 0, dim.width, dim.height);
     drawBorders(graphics);
     drawCardsAndSymbols(graphics);
   }

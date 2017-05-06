@@ -36,19 +36,19 @@ public class ScreenPlay implements ScreenPlayInterface {
 
   public @Override void init(Screen screen) {
     this.screen=screen;
-    startGame();
+    startBet();
   }
 
   public @Override void betEntered(String bet) {
     int amount=-1;
     try {
-      amount=Integer.parseInt(bet);
+      amount=Integer.parseInt(bet.trim().replaceAll("\\D", ""));
     } catch (Exception e) {
       return;
     }
     if (amount <= gamble.getTotal()) {
       gamble.setBet(amount);
-      screen.setGameState(game.getState(), gamble);
+      startGame();
     }
     else
       screen.setStateBet(gamble.getTotal());
@@ -108,7 +108,7 @@ public class ScreenPlay implements ScreenPlayInterface {
   public @Override void playAgainEntered(String choice) {
     choice=choice.toLowerCase().trim();
     if (choice.equals(""))
-      startGame();
+      startBet();
     else
       System.exit(0);
   }
@@ -117,16 +117,24 @@ public class ScreenPlay implements ScreenPlayInterface {
   // PRIVATE METHODS: //
   //////////////////////
 
-  private void startGame() {
-    game=new Game(config);
-    screen.setBoard(game.getBoard());
+  private void startBet() {
+    screen.setBoard(null);
     if (gamble!=null)
       screen.setStateBet(gamble.getTotal());
     else
-      screen.setGameState(game.getState(), gamble);
+      startGame();
+  }
+
+  private void startGame() {
+    game=new Game(config);
+    screen.setBoard(game.getBoard());
+    screen.setGameState(game.getState(), gamble);
   }
 
   private void nextCard() {
+    if (game.isOver() && gamble!=null)
+      gamble.winOrLose(game.isWon(), game.allCovered());
+    else
     if (game.isWaiting() || game.isGameStart()) {
       game.nextCard();
       if (game.isCardUp())
