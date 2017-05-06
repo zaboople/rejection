@@ -48,7 +48,6 @@ public class ScreenPlay implements ScreenPlayInterface {
     }
     if (amount <= gamble.getTotal()) {
       gamble.setBet(amount);
-      nextCard();
       screen.setGameState(game.getState(), gamble);
     }
     else
@@ -62,8 +61,10 @@ public class ScreenPlay implements ScreenPlayInterface {
     if (state.isGameStart()) {
       boolean doubled="d".equals(move);
       boolean valid=doubled || "".equals(move) || gamble==null;
-      if (gamble!=null && gamble.canDoubleDown() && doubled)
+      if (gamble!=null && gamble.canDoubleDown() && doubled) {
         gamble.doubleDown();
+        screen.setBet(gamble);
+      }
       if (valid)
         nextCard();
       screen.setGameState(state, gamble);
@@ -95,7 +96,7 @@ public class ScreenPlay implements ScreenPlayInterface {
       if (move.equals("g"))
         game.giveUp();
       else
-      if (move.equals("")) {
+      if (move.equals("a") || move.equals("")) {
         game.finishPlayCard();
         nextCard();
       }
@@ -121,10 +122,8 @@ public class ScreenPlay implements ScreenPlayInterface {
     screen.setBoard(game.getBoard());
     if (gamble!=null)
       screen.setStateBet(gamble.getTotal());
-    else {
-      nextCard();
+    else
       screen.setGameState(game.getState(), gamble);
-    }
   }
 
   private void nextCard() {

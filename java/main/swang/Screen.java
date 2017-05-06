@@ -121,6 +121,10 @@ public class Screen {
     setVisiblePanel(pnlBet);
     jtfBet.requestFocusInWindow();
   }
+  public void setBet(Gamble gamble) {
+    lblBetPrefix.setText(gamble==null ?" " :"Bet:");
+    lblBet.setText(gamble==null ?" " :String.format("%d of %d", gamble.getBet(), gamble.getTotal()));
+  }
 
   public void setGameState(GameState state, Gamble gamble) {
     this.gameState=state;
@@ -145,6 +149,7 @@ public class Screen {
     }
 
     if (state.isGameStart()) {
+      setBet(gamble);
       lblStrikeAlert.setText(" ");
       setVisiblePanel(pnlPlay);
       lblForMove.setText(
@@ -152,7 +157,7 @@ public class Screen {
           ?"Enter [D]ouble down or [ ] to play first card:"
           :"Press enter [ ] to play first card:"
       );
-      selectAll(jtfMove);
+      jtfMove.setText("");
       lblStrikeAlert.setText(" ");
       jtfMove.requestFocusInWindow();
     }
@@ -161,17 +166,20 @@ public class Screen {
       setStrikeAlert();
       lblForMove.setText("Strike hit. Press enter:");
       setVisiblePanel(pnlPlay);
-      selectAll(jtfMove);
+      jtfMove.setText("");;
       jtfMove.requestFocusInWindow();
     }
     else
     if (state.isCardPlaced()) {
+      if (!" ".equals(lblStrikeAlert.getText()))
+        lblStrikeAlert.setText(" ");
       String lblText="[R]otate, [S]witch, [G]ive up or [ ]Accept:";
       if (!lblText.equals(lblForMove.getText()))
         lblForMove.setText(lblText);
       setVisiblePanel(pnlPlay);
-      selectAll(jtfMove);
+      jtfMove.setText("");;
       jtfMove.requestFocusInWindow();
+      cardPanel.repaint();
     }
     else
     if (state.isOver()) {
@@ -184,29 +192,15 @@ public class Screen {
       }
       lblYouHave.setText(gamble==null ?" " :String.format("You have $%d", gamble.getTotal()));
       setVisiblePanel(pnlWinLose);
-      selectAll(jtfPlayAgain);
+      jtfPlayAgain.setText("");
       jtfPlayAgain.requestFocusInWindow();
+      cardPanel.repaint();
     }
 
   }
 
-  public void setStatePlay(Gamble gamble, BoardView board) {
-    lblStrikes.setText(" ");
-    lblBetPrefix.setText(gamble==null ?" " :"Bet:");
-    lblBet.setText(gamble==null ?" " :String.format("%d of %d", gamble.getBet(), gamble.getTotal()));
-    setVisiblePanel(pnlPlay);
-    cardPanel.setBoard(board);
-    jtfMove.requestFocusInWindow();
-  }
-
   private void setStrikeAlert() {
     lblStrikeAlert.setText("   !!! STRIKE !!!");
-  }
-  private static void selectAll(JTextField jtf) {
-    String s=jtf.getText();
-    if (s==null || s.length()==0)
-      return;
-    jtf.select(0, s.length());
   }
 
 
