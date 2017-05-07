@@ -56,7 +56,6 @@ public class ScreenPlay implements ScreenPlayInterface {
 
   public @Override void moveEntered(String move) {
     move=move.toLowerCase().trim();
-    System.out.println("MOVE "+move);
     GameState state=game.getState();
     if (state.isGameStart()) {
       boolean doubled="d".equals(move);
@@ -93,8 +92,10 @@ public class ScreenPlay implements ScreenPlayInterface {
       if (move.equals("r"))
         game.rotateCard();
       else
-      if (move.equals("g"))
+      if (move.equals("g")) {
         game.giveUp();
+        gamble.winOrLose(game.isWon(), game.allCovered());
+      }
       else
       if (move.equals("a") || move.equals("")) {
         game.finishPlayCard();
@@ -110,7 +111,10 @@ public class ScreenPlay implements ScreenPlayInterface {
     if (choice.equals(""))
       startBet();
     else
+    if (choice.equals("q"))
       System.exit(0);
+    else
+      screen.setGameState(game.getState(), gamble);
   }
 
   //////////////////////
@@ -132,14 +136,13 @@ public class ScreenPlay implements ScreenPlayInterface {
   }
 
   private void nextCard() {
-    if (game.isOver() && gamble!=null)
-      gamble.winOrLose(game.isWon(), game.allCovered());
-    else
     if (game.isWaiting() || game.isGameStart()) {
       game.nextCard();
       if (game.isCardUp())
         game.playCardWherever();
     }
+    if (game.isOver() && gamble!=null)
+      gamble.winOrLose(game.isWon(), game.allCovered());
   }
 
 }

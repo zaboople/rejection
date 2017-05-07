@@ -7,6 +7,7 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.GraphicsEnvironment;
 import java.awt.Insets;
+import java.awt.Rectangle;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -68,13 +69,14 @@ public class Screen {
 
   private ScreenPlayInterface watcher;
   private GameState gameState;
+  private boolean fullScreen=false;
   private boolean initialized=false;
 
-  private int blackLabelFontSize=20;
-  private Font blackLabelFont;
+  private int blackLabelFontSize=20, cardFontSize=10;
+  private Font blackLabelFont, cardFont;
 
   private JFrame win;
-  private NewCardPanel cardPanel;
+  private CardPanel cardPanel;
   private JLabel
     lblStrikeAlert,
 
@@ -96,7 +98,7 @@ public class Screen {
   private JComponent[] allNothings, allTextComps, allJTFs, textPanels;
   private int lblNothingIndex=-1;
   private JTextField jtfBet, jtfMove, jtfPlayAgain;
-  private JPanel pnlPlay, pnlWinLose, pnlBet;
+  private JPanel pnlPlay, pnlWinLose, pnlBet, pnlAlert;
   private CurrentOS currentOS;
 
   Screen(ScreenPlayInterface watcher) {
@@ -123,12 +125,11 @@ public class Screen {
   }
   public void setBet(Gamble gamble) {
     lblBetPrefix.setText(gamble==null ?" " :"Bet:");
-    lblBet.setText(gamble==null ?" " :String.format("%d of %d", gamble.getBet(), gamble.getTotal()));
+    lblBet.setText(gamble==null ?" " :String.format(" $%d of %d", gamble.getBet(), gamble.getTotal()));
   }
 
   public void setGameState(GameState state, Gamble gamble) {
     this.gameState=state;
-    System.out.println("FUDGE"+state);
 
     // Key & Strike count/limit:
     {
@@ -152,6 +153,7 @@ public class Screen {
       setBet(gamble);
       lblStrikeAlert.setText(" ");
       setVisiblePanel(pnlPlay);
+      resizeAlert();
       lblForMove.setText(
         gamble!=null && gamble.canDoubleDown()
           ?"Enter [D]ouble down or [ ] to play first card:"
@@ -200,7 +202,9 @@ public class Screen {
   }
 
   private void setStrikeAlert() {
-    lblStrikeAlert.setText("   !!! STRIKE !!!");
+    resizeAlert();
+    lblStrikeAlert.setForeground(Color.RED);
+    lblStrikeAlert.setText("!!!!!! STRIKE !!!!!!");
   }
 
 
@@ -222,17 +226,29 @@ public class Screen {
 
     win=new JFrame();
     win.setTitle("Rejection");
-    win.setPreferredSize(new Dimension(15*50, 12*50)); //FIXME
-    blackLabelFont=createFont(blackLabelFontSize);
 
-    cardPanel=new NewCardPanel();
-    cardPanel.setFont(blackLabelFont);
+    if (fullScreen) {
+      Rectangle screen=win.getGraphicsConfiguration().getBounds();
+      win.setBounds(screen);
+      win.setUndecorated(true);
+    }
+    else
+      win.setPreferredSize(new Dimension(15*50, 12*50));
+
+
+    blackLabelFont=createLabelFont(blackLabelFontSize);
+    cardFont=createCardFont(cardFontSize);
+
+    cardPanel=new CardPanel();
+    cardPanel.setFont(cardFont);
 
     pnlPlay=newBlackPanel();
     pnlWinLose=newBlackPanel();
     pnlBet=newBlackPanel();
+    pnlAlert=newBlackPanel();
 
     lblStrikeAlert=new BlackLabel("STRIKE");
+    lblStrikeAlert.setForeground(Color.RED);
     lblKeys=new BlackLabel(" 0 / 0 ******");
     lblForKeys=new BlackLabel("Keys:");
     lblForStrikes=new BlackLabel("Strikes:");
@@ -249,9 +265,8 @@ public class Screen {
     jtfPlayAgain=new BlackJTF();
     jtfPlayAgain.setColumns(2);
 
-    //FIXME how about "Your bank: $##" "Your bet: $jtf"
     lblEnterBet1=new BlackLabel("Bet for this game,");
-    lblEnterBet2=new BlackLabel("limit $XXXXXX:");
+    lblEnterBet2=new BlackLabel("banked $XXXXXX:");
     jtfBet=new BlackJTF();
     jtfBet.setColumns(10);
 
@@ -264,10 +279,6 @@ public class Screen {
     for (int i=0; i<allNothings.length; i++) allNothings[i]=new BlackLabel(" ");
     allJTFs=new JComponent[]{jtfBet, jtfMove, jtfPlayAgain};
     textPanels=new JComponent[]{pnlPlay, pnlWinLose, pnlBet};
-  }
-
-  private Font createFont(int size) {
-    return new Font(Font.MONOSPACED, Font.PLAIN, size);
   }
 
   /////////////
@@ -291,7 +302,8 @@ public class Screen {
       .addY(layoutWinLose())
       .addY(layoutPnlBet())
       ;
-    win.pack();
+    if (!fullScreen)
+      win.pack();
   }
 
 
@@ -310,7 +322,14 @@ public class Screen {
       .insets(0, 0, 0, 0)
       .weightXY(0, 0)
       .anchor(GridBug.WEST)
-      .gridWidth(2).weightX(1).add(lblStrikeAlert).weightX(0).gridWidth(1)
+      .setX(0).gridWidth(2).weightX(1).fill(GridBug.NONE)
+      .addX(
+        new GridBug(pnlAlert)
+          .insets(0)
+          .weightX(0).add(lblStrikeAlert)
+          .getContainer()
+      )
+      .fill(GridBug.NONE).weightX(0).gridWidth(1)
       .addY().setX(0).addX(lblForKeys).add(lblKeys)
       .addY().setX(0).addX(lblForStrikes).add(lblStrikes)
       .addY().setX(0).addX(lblBetPrefix).add(lblBet)
@@ -345,13 +364,14 @@ public class Screen {
     return new GridBug(pnlBet)
       .insets(0, 0, 0, 0)
       .anchor(GridBug.WEST)
-      .gridWidth(1).weightX(0).addX(lblEnterBet1)
-        .weightX(1).insetLeft(3).fill(GridBug.HORIZONTAL).insetRight(10).addY(jtfBet)
       .setX(0).insetLeft(0).insetRight(0).gridWidth(2).weightX(0)
       .addY(allNothings[++lblNothingIndex])
       .addY(allNothings[++lblNothingIndex])
       .addY(allNothings[++lblNothingIndex])
       .addY(allNothings[++lblNothingIndex])
+      .gridWidth(1).weightX(0).addX(lblEnterBet1) //FIXME move to bottom
+        .weightX(1).insetLeft(3).fill(GridBug.HORIZONTAL)
+        .insetRight(10).addY(jtfBet)
       .getContainer();
   }
 
@@ -406,17 +426,47 @@ public class Screen {
     return keyCode==KeyEvent.VK_ENTER || !"".equals(entryBox.getText().trim());
   }
 
+  /** This seems to get invoked before rendering, so we don't have to issue a repaint() */
   private void handleResizeWindow() {
-    int fontSize=win.getHeight() / 32;
-    if (fontSize==0) fontSize=1;
-    Font font=createFont(fontSize);
-    if (!font.equals(blackLabelFont)) {
-      blackLabelFont=font;
-      for (JComponent comp: allTextComps)
-        comp.setFont(font);
-      for (JComponent comp: allNothings)
-        comp.setFont(font);
-      cardPanel.setFont(font);
+
+    // 1. Label font:
+    {
+      int fontSize=win.getHeight() / 32;
+      if (fontSize==0) fontSize=1;
+      else
+      if (fontSize>18) fontSize=18;
+      Font font=createLabelFont(fontSize);
+      if (!font.equals(blackLabelFont)) {
+        blackLabelFont=font;
+        for (JComponent comp: allTextComps)
+          comp.setFont(font);
+        for (JComponent comp: allNothings)
+          comp.setFont(font);
+        cardPanel.setFont(font);
+      }
+    }
+
+    // 2. Card panel font:
+    {
+      int fontSize=win.getHeight() / 48;
+      if (fontSize==0) fontSize=1;
+      else
+      if (fontSize>18) fontSize=18;
+      Font font=createCardFont(fontSize);
+      if (!font.equals(cardFont)){
+        cardFont=font;
+        cardPanel.setFont(font);
+      }
+    }
+    resizeAlert();
+  }
+
+  private void resizeAlert() {
+    Dimension pnlAlertSize=pnlAlert.getSize();
+    int cardPanelWide=cardPanel.getActualWidth();
+    if (pnlAlertSize.height > 0 && cardPanelWide!=pnlAlertSize.width && cardPanelWide>0){
+      pnlAlert.setPreferredSize(new Dimension(cardPanel.getActualWidth(), pnlAlertSize.height));
+      pnlAlert.revalidate();
     }
   }
 
@@ -425,6 +475,24 @@ public class Screen {
       if (p!=jc)
         jc.setVisible(false);
     p.setVisible(true);
+  }
+
+  private static JPanel newColorPanel(Color c) {
+    JPanel jp=new JPanel();
+    jp.setBackground(c);
+    return jp;
+  }
+
+  private static JPanel newBlackPanel() {
+    return newColorPanel(Color.BLACK);
+  }
+
+  private Font createCardFont(int size) {
+    return new Font(Font.SANS_SERIF, Font.PLAIN, size);
+  }
+
+  private Font createLabelFont(int size) {
+    return new Font(Font.MONOSPACED, Font.PLAIN, size);
   }
 
   /////////////////////
@@ -448,19 +516,9 @@ public class Screen {
       setCaretColor(Color.GRAY);// Leave alone and get no cursor
     }
   }
-  private static JPanel newColorPanel(Color c) {
-    JPanel jp=new JPanel();
-    jp.setBackground(c);
-    return jp;
-  }
-  private static JPanel newBlackPanel() {
-    return newColorPanel(Color.BLACK);
-  }
-
   /////////////
   /// TEST: ///
   /////////////
-
 
   public static void main(final String[] args) throws Exception {
     startup(new ScreenPlayTest());

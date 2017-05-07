@@ -13,7 +13,7 @@ import main.Card;
 import main.BoardView;
 import main.Cell;
 
-public class NewCardPanel extends JPanel {
+public class CardPanel extends JPanel {
 
   private static final int dashCount=5;
   private static final int dashFactor=1;
@@ -59,6 +59,14 @@ public class NewCardPanel extends JPanel {
       this.cols=b.getWidth();
     }
     this.repaint();
+  }
+
+  public int getActualWidth() {
+    return actualWide;
+  }
+
+  public int getActualHeight() {
+    return actualHigh;
   }
 
   ////////////////////////
@@ -193,6 +201,7 @@ public class NewCardPanel extends JPanel {
     // Decoration space and leftovers:
     dashWide=((dim.width+dim.height) / 384) * dashFactor;
     if (dashWide==0) dashWide=1;
+    else if (dashWide>3) dashWide=3;
     border=dashWide;
     int highExtra=(border*2)+((rows+1)*dashWide);
     int wideExtra=(border*2)+((cols+1)*dashWide);
@@ -214,6 +223,8 @@ public class NewCardPanel extends JPanel {
     // Dashes:
     gapLen=Math.round(cardHigh / 20f);
     if (gapLen<2) gapLen=2;
+    else
+    if (gapLen>4) gapLen=4;
     float fdashCount=dashCount;
     wDashLen=(int)Math.round(
       (cardWide - (gapLen * (dashCount+1))) / fdashCount
