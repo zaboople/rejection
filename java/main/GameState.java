@@ -3,7 +3,9 @@ package main;
 /**
  * Exposes parts of the internal state of the Game mainly to allow read-only consumption
  * by UI rendering while limiting write access. Acts like it's immutable, but it actually isn't (we
- * can change that easily enough if we ever want to).
+ * can change that easily enough if we ever want to). There are some things that technically *should*
+ * be in here but... aren't, mainly the Gamble class. This is close enough for jazz, however, and the
+ * loose ends are not hard to tie up.
  */
 public class GameState {
 

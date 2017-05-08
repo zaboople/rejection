@@ -124,7 +124,8 @@ public class Screen {
     lblBet.setText(gamble==null ?" " :String.format(" $%d of %d", gamble.getBet(), gamble.getTotal()));
   }
 
-  public void nextState(GameState state, Gamble gamble) {
+  /** The onFinishCell param lets us know enough to determine why we lost (strikes, out of moves, missed key cells) */
+  void nextState(GameState state, Gamble gamble, boolean onFinishCell) {
     this.gameState=state;
 
     // Key & Strike count/limit:
@@ -190,7 +191,7 @@ public class Screen {
                 :String.format("$$$$$$$ WIN You have $%d $$$$$$$", gamble.getTotal())
           )
           :(
-              getLoseMessage(state)+(
+              getLoseMessage(state, onFinishCell)+(
                 gamble==null ?"" :String.format(" You have $%d", gamble.getTotal())
               )
           )
@@ -448,7 +449,9 @@ public class Screen {
     }
   }
 
-  private static String getLoseMessage(GameState state) {
+  private static String getLoseMessage(GameState state, boolean onFinishCell) {
+    // There is some process-of-elimination reasoning here that limits our need
+    // to have access to the full game state situation.
     if (!state.isLost())
       return "LOSE - INTERNAL ERROR";
     else
@@ -458,7 +461,10 @@ public class Screen {
     if (state.getStrikeCount()==state.getStrikeLimit())
       return "LOSE - Too many strikes.";
     else
-      return "LOSE.";
+    if (onFinishCell)
+      return "LOSE - Missed keys.";
+    else
+      return "LOSE - Nowhere to go.";
   }
 
   private void setVisiblePanel(JPanel p) {

@@ -291,16 +291,17 @@ public class CardPanel extends JPanel {
    * card path drawing.
    */
   private void recomputePathOffsets() {
-    int avgFontHigh=fontOffsets[fontIndexKey].height,
-        avgFontWide=fontOffsets[fontIndexKey].width; //DERP
+    int avgFontTopOff=fontOffsets[fontIndexKey].height,
+        avgFontLeftOff=fontOffsets[fontIndexKey].width; //DERP
 
     vPathLeftOff=Math.round((cardWide-dashWide)/2.0f);
-    vPathHigh=cardHigh - (avgFontHigh + (dashWide * 2));
-    vPathDownTopOff=avgFontHigh + dashWide;
+    vPathHigh=cardHigh - (avgFontTopOff + (dashWide * 2));
+    vPathDownTopOff=avgFontTopOff + dashWide;
 
     hPathTopOff=Math.round((cardHigh-dashWide)/2.0f);
-    hPathWide=Math.round((cardWide - (avgFontWide + (dashWide * 2)))/2.0f);
-    hPathRightOff=dashWide + hPathWide + avgFontWide;
+    hPathWide=avgFontLeftOff-(dashWide*2);
+    hPathRightOff=cardWide - (dashWide+hPathWide);
+    //System.out.println("FUCK "+cardWide+" "+avgFontWide+" "+dashWide);
   }
 
 }

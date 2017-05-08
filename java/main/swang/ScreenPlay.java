@@ -17,7 +17,7 @@ public class ScreenPlay implements ScreenPlayInterface {
     if (!setup.go(args))
       System.exit(1);
     else
-      Screen.startup(new ScreenPlay(setup.config, setup.gamble), true);
+      Screen.startup(new ScreenPlay(setup.config, setup.gamble), false);
   }
 
   private final GameConfig config;
@@ -83,7 +83,7 @@ public class ScreenPlay implements ScreenPlayInterface {
    * with the latest state and wait for the callback to moveEntered().
    */
   private void updateDisplay() {
-    screen.nextState(game.getState(), gamble);
+    screen.nextState(game.getState(), gamble, game.getBoard().onFinish());
   }
 
   /**

@@ -72,6 +72,9 @@ public class Board implements BoardView { //Fixme use Override keyword
   public @Override boolean isFinish(int row, int col) {
     return toIndex(row, col)==finishPos;
   }
+  public @Override boolean onFinish() {
+    return current==finishPos;
+  }
 
   public Cell getCell(int i) {return cells[i];}
   public int getCellCount() {return cells.length;}
@@ -89,9 +92,6 @@ public class Board implements BoardView { //Fixme use Override keyword
 
   public boolean onKey() {return cells[current].isKey();}
   public boolean onBonus() {return cells[current].isBonus();}
-  public boolean onFinish() {
-    return current==finishPos;
-  }
   public boolean hasCurrent() {
     return current!=-1;
   }
