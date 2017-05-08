@@ -55,11 +55,11 @@ import org.tmotte.common.swang.KeyMapper;
 
 public class Screen {
 
-  public static void startup(ScreenPlayInterface spi) {
+  public static void startup(ScreenPlayInterface spi, boolean fullScreen) {
     javax.swing.SwingUtilities.invokeLater(()-> {
       try {
         javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager.getSystemLookAndFeelClassName());
-        Screen screen=new Screen(spi);
+        Screen screen=new Screen(spi, fullScreen);
         screen.show();
       } catch (Exception e) {
         throw new RuntimeException(e);
@@ -88,27 +88,23 @@ public class Screen {
     lblBet,
     lblForMove,
 
-    lblWinLose,
-    lblYouHave,
-    lblPlayAgain,
-
     lblEnterBet1,
     lblEnterBet2
   ;
   private JComponent[] allNothings, allTextComps, allJTFs, textPanels;
   private int lblNothingIndex=-1;
-  private JTextField jtfBet, jtfMove, jtfPlayAgain;
-  private JPanel pnlPlay, pnlWinLose, pnlBet, pnlAlert;
+  private JTextField jtfBet, jtfMove;
+  private JPanel pnlPlay, pnlBet, pnlAlert;
   private CurrentOS currentOS;
 
-  Screen(ScreenPlayInterface watcher) {
+  Screen(ScreenPlayInterface watcher, boolean fullScreen) {
     this.watcher=watcher;
+    this.fullScreen=fullScreen;
   }
 
   public void show() {
     init();
     pnlPlay.setVisible(false);
-    pnlWinLose.setVisible(false);
     pnlBet.setVisible(false);
     watcher.init(this);
     win.setVisible(true);
@@ -185,26 +181,35 @@ public class Screen {
     }
     else
     if (state.isOver()) {
-      if (state.isWon())
-        lblWinLose.setText(gamble==null ?"******* WIN *******" :"$$$$$$$ WIN $$$$$$$");
-      else {
-        lblWinLose.setText("LOSE");
-        if (gameState.getStrikeCount()==gameState.getStrikeLimit())
-          setStrikeAlert();
-      }
-      lblYouHave.setText(gamble==null ?" " :String.format("You have $%d", gamble.getTotal()));
-      setVisiblePanel(pnlWinLose);
-      jtfPlayAgain.setText("");
-      jtfPlayAgain.requestFocusInWindow();
+      setAlert(
+        state.isWon()? Color.GREEN :Color.RED,
+        state.isWon()
+          ?(
+              gamble==null
+                ?"******* WIN *******"
+                :String.format("$$$$$$$ WIN You have $%d $$$$$$$", gamble.getTotal())
+          )
+          :(
+              getLoseMessage(state)+String.format(" You have $%d", gamble.getTotal())
+          )
+      );
+      lblForMove.setText("Play again? Enter [Q]uit or [ ] to continue:");
+      jtfMove.setText("");
+      setVisiblePanel(pnlPlay);
+      jtfMove.requestFocusInWindow();
       cardPanel.repaint();
     }
 
   }
 
   private void setStrikeAlert() {
+    setAlert(Color.RED, "!!!!!! STRIKE !!!!!!");
+  }
+
+  private void setAlert(Color color, String text) {
     resizeAlert();
-    lblStrikeAlert.setForeground(Color.RED);
-    lblStrikeAlert.setText("!!!!!! STRIKE !!!!!!");
+    lblStrikeAlert.setForeground(color);
+    lblStrikeAlert.setText(text);
   }
 
 
@@ -243,7 +248,6 @@ public class Screen {
     cardPanel.setFont(cardFont);
 
     pnlPlay=newBlackPanel();
-    pnlWinLose=newBlackPanel();
     pnlBet=newBlackPanel();
     pnlAlert=newBlackPanel();
 
@@ -259,12 +263,6 @@ public class Screen {
     jtfMove=new BlackJTF();
     jtfMove.setColumns(2);
 
-    lblWinLose=new BlackLabel("$$$$$$$ WIN $$$$$$$");
-    lblYouHave=new BlackLabel("You have $1000010000");
-    lblPlayAgain=new BlackLabel("Play again? Enter [Q]uit or [ ] to continue:");
-    jtfPlayAgain=new BlackJTF();
-    jtfPlayAgain.setColumns(2);
-
     lblEnterBet1=new BlackLabel("Bet for this game,");
     lblEnterBet2=new BlackLabel("banked $XXXXXX:");
     jtfBet=new BlackJTF();
@@ -272,13 +270,12 @@ public class Screen {
 
     allTextComps=new JComponent[]{
       lblEnterBet1, lblEnterBet2, jtfBet,
-      lblStrikeAlert, lblForKeys, lblKeys, lblForStrikes, lblStrikes, lblBetPrefix, lblBet, lblForMove, jtfMove,
-      lblWinLose, lblYouHave, lblPlayAgain, jtfPlayAgain
+      lblStrikeAlert, lblForKeys, lblKeys, lblForStrikes, lblStrikes, lblBetPrefix, lblBet, lblForMove, jtfMove
     };
     allNothings=new JComponent[6];
     for (int i=0; i<allNothings.length; i++) allNothings[i]=new BlackLabel(" ");
-    allJTFs=new JComponent[]{jtfBet, jtfMove, jtfPlayAgain};
-    textPanels=new JComponent[]{pnlPlay, pnlWinLose, pnlBet};
+    allJTFs=new JComponent[]{jtfBet, jtfMove};
+    textPanels=new JComponent[]{pnlPlay, pnlBet};
   }
 
   /////////////
@@ -299,7 +296,6 @@ public class Screen {
       .weightXY(1,0)
       .setInsets(0, 5, 5, 10)
       .addY(layoutPlay())
-      .addY(layoutWinLose())
       .addY(layoutPnlBet())
       ;
     if (!fullScreen)
@@ -343,23 +339,6 @@ public class Screen {
   }
 
 
-  private Container layoutWinLose() {
-    return new GridBug(pnlWinLose)
-      .anchor(GridBug.WEST)
-      .gridWidth(1).weightX(1)
-      .addY(lblWinLose)
-      .addY(allNothings[++lblNothingIndex])
-      .addY(lblYouHave)
-      .addY(allNothings[++lblNothingIndex])
-      .addY(
-        new GridBug(newBlackPanel())
-          .insets(0)
-          .addX(lblPlayAgain).insetLeft(3).add(jtfPlayAgain)
-          .getContainer()
-      )
-      .getContainer();
-  }
-
   private Container layoutPnlBet() {
     return new GridBug(pnlBet)
       .insets(0, 0, 0, 0)
@@ -397,9 +376,6 @@ public class Screen {
         else
         if (comp==jtfMove && textActuallyEntered(keyCode, jtfMove))
           watcher.moveEntered(jtfMove.getText());
-        else
-        if (comp==jtfPlayAgain && textActuallyEntered(keyCode, jtfPlayAgain))
-          watcher.playAgainEntered(jtfPlayAgain.getText());
       }
     };
     win.addKeyListener(allListener);
@@ -464,10 +440,23 @@ public class Screen {
   private void resizeAlert() {
     Dimension pnlAlertSize=pnlAlert.getSize();
     int cardPanelWide=cardPanel.getActualWidth();
-    if (pnlAlertSize.height > 0 && cardPanelWide!=pnlAlertSize.width && cardPanelWide>0){
+    if (pnlAlertSize.height > 0 && cardPanelWide!=pnlAlertSize.width && cardPanelWide>lblForMove.getSize().width){
       pnlAlert.setPreferredSize(new Dimension(cardPanel.getActualWidth(), pnlAlertSize.height));
       pnlAlert.revalidate();
     }
+  }
+
+  private static String getLoseMessage(GameState state) {
+    if (!state.isLost())
+      return "LOSE - INTERNAL ERROR";
+    else
+    if (state.isGiveUp())
+      return "LOSE - You gave up.";
+    else
+    if (state.getStrikeCount()==state.getStrikeLimit())
+      return "LOSE - Too many strikes.";
+    else
+      return "LOSE.";
   }
 
   private void setVisiblePanel(JPanel p) {
@@ -516,11 +505,12 @@ public class Screen {
       setCaretColor(Color.GRAY);// Leave alone and get no cursor
     }
   }
+
   /////////////
   /// TEST: ///
   /////////////
 
   public static void main(final String[] args) throws Exception {
-    startup(new ScreenPlayTest());
+    startup(new ScreenPlayTest(), false);
   }
 }

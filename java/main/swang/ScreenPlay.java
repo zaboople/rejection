@@ -17,7 +17,7 @@ public class ScreenPlay implements ScreenPlayInterface {
   }
 
   private static void play(GameConfig config, Gamble gamble) throws Exception {
-    Screen.startup(new ScreenPlay(config, gamble));
+    Screen.startup(new ScreenPlay(config, gamble), true);
   }
 
   private final GameConfig config;
@@ -103,19 +103,18 @@ public class ScreenPlay implements ScreenPlayInterface {
       }
       screen.setGameState(state, gamble);
     }
+    else
+    if (game.isOver()) {
+      if (move.equals("q"))
+        System.exit(0);
+      else
+      if (move.equals(""))
+        startBet();
+      else
+        screen.setGameState(state, gamble);
+    }
   }
 
-
-  public @Override void playAgainEntered(String choice) {
-    choice=choice.toLowerCase().trim();
-    if (choice.equals(""))
-      startBet();
-    else
-    if (choice.equals("q"))
-      System.exit(0);
-    else
-      screen.setGameState(game.getState(), gamble);
-  }
 
   //////////////////////
   // PRIVATE METHODS: //
