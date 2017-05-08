@@ -10,14 +10,14 @@ import main.GameState;
  * although Screen really ends up being the mirror to it.
  */
 public class ScreenPlay implements ScreenPlayInterface {
+
+  /** Entry point for the whole shebang. */
   public static void main(String[] args) throws Exception {
     GameConfigSetup setup=new GameConfigSetup();
-    if (!setup.go(args)) System.exit(1);
-    else play(setup.config, setup.gamble);
-  }
-
-  private static void play(GameConfig config, Gamble gamble) throws Exception {
-    Screen.startup(new ScreenPlay(config, gamble), true);
+    if (!setup.go(args))
+      System.exit(1);
+    else
+      Screen.startup(new ScreenPlay(setup.config, setup.gamble), true);
   }
 
   private final GameConfig config;
@@ -34,11 +34,25 @@ public class ScreenPlay implements ScreenPlayInterface {
   // EVENTS: //
   /////////////
 
+  /** The initial callback from Screen after it's bootstrapped itself in. */
   public @Override void init(Screen screen) {
     this.screen=screen;
     startBet();
   }
 
+  /**
+   * This is the verymost beginning of a game. The corresponding callback
+   * is betEntered().
+   */
+  private void startBet() {
+    screen.setBoard(null);
+    if (gamble!=null)
+      screen.setStateBet(gamble.getTotal());
+    else
+      startGame();
+  }
+
+  /** If this callback succeeds, we advance to startGame(). */
   public @Override void betEntered(String bet) {
     int amount=-1;
     try {
@@ -54,35 +68,57 @@ public class ScreenPlay implements ScreenPlayInterface {
       screen.setStateBet(gamble.getTotal());
   }
 
+  /**
+   * Creates a new game after betting is done, and sets up the first callback to
+   * moveEntered.
+   */
+  private void startGame() {
+    game=new Game(config);
+    screen.setBoard(game.getBoard());
+    updateDisplay();
+  }
+
+  /**
+   * After bet entry, this acts as launch point to set up the Screen class
+   * with the latest state and wait for the callback to moveEntered().
+   */
+  private void updateDisplay() {
+    screen.nextState(game.getState(), gamble);
+  }
+
+  /**
+   * This is called _after_ user input, so the goal is to advance
+   * to the next state or ask them to try again because input was invalid.
+   */
   public @Override void moveEntered(String move) {
     move=move.toLowerCase().trim();
     GameState state=game.getState();
     if (state.isGameStart()) {
       boolean doubled="d".equals(move);
-      boolean valid=doubled || "".equals(move) || gamble==null;
+      boolean valid=doubled || "".equals(move);
       if (gamble!=null && gamble.canDoubleDown() && doubled) {
         gamble.doubleDown();
         screen.setBet(gamble);
       }
       if (valid)
-        nextCard();
-      screen.setGameState(state, gamble);
+        advanceState();
+      updateDisplay();
     }
     else
     if (game.isWaiting()) {
-      nextCard();
-      screen.setGameState(state, gamble);
+      advanceState();
+      updateDisplay();
     }
     else
     if (game.isWaitingStriked()) {
       game.ackStrike();
-      nextCard();
-      screen.setGameState(state, gamble);
+      advanceState();
+      updateDisplay();
     }
     else
     if (game.isCardUp()) {
       game.playCardWherever();
-      screen.setGameState(state, gamble);
+      updateDisplay();
     }
     else
     if (game.isCardPlaced()) {
@@ -94,14 +130,14 @@ public class ScreenPlay implements ScreenPlayInterface {
       else
       if (move.equals("g")) {
         game.giveUp();
-        gamble.winOrLose(game.isWon(), game.allCovered());
+        advanceState();
       }
       else
       if (move.equals("a") || move.equals("")) {
         game.finishPlayCard();
-        nextCard();
+        advanceState();
       }
-      screen.setGameState(state, gamble);
+      updateDisplay();
     }
     else
     if (game.isOver()) {
@@ -111,30 +147,19 @@ public class ScreenPlay implements ScreenPlayInterface {
       if (move.equals(""))
         startBet();
       else
-        screen.setGameState(state, gamble);
+        // Bad input:
+        updateDisplay();
     }
   }
 
-
-  //////////////////////
-  // PRIVATE METHODS: //
-  //////////////////////
-
-  private void startBet() {
-    screen.setBoard(null);
-    if (gamble!=null)
-      screen.setStateBet(gamble.getTotal());
-    else
-      startGame();
-  }
-
-  private void startGame() {
-    game=new Game(config);
-    screen.setBoard(game.getBoard());
-    screen.setGameState(game.getState(), gamble);
-  }
-
-  private void nextCard() {
+  /**
+   * Advances us through state changes until we are ready to get more input.
+   * 1. Advances to the next card if the game isn't over. Plays the card
+   *    to the "best-looking" spot if it's not the first move.
+   * 2. If the previous caused us to lose the game (on strikes), or if the game was
+   *    already over, updates the gamble status.
+   */
+  private void advanceState() {
     if (game.isWaiting() || game.isGameStart()) {
       game.nextCard();
       if (game.isCardUp())

@@ -15,7 +15,7 @@ import main.Cell;
 
 public class CardPanel extends JPanel {
 
-  private static final int dashCount=5;
+  private static final int dashCount=2;
   private static final int dashFactor=1;
 
   /////////////////////////

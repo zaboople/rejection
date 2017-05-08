@@ -124,7 +124,7 @@ public class Screen {
     lblBet.setText(gamble==null ?" " :String.format(" $%d of %d", gamble.getBet(), gamble.getTotal()));
   }
 
-  public void setGameState(GameState state, Gamble gamble) {
+  public void nextState(GameState state, Gamble gamble) {
     this.gameState=state;
 
     // Key & Strike count/limit:
@@ -190,7 +190,9 @@ public class Screen {
                 :String.format("$$$$$$$ WIN You have $%d $$$$$$$", gamble.getTotal())
           )
           :(
-              getLoseMessage(state)+String.format(" You have $%d", gamble.getTotal())
+              getLoseMessage(state)+(
+                gamble==null ?"" :String.format(" You have $%d", gamble.getTotal())
+              )
           )
       );
       lblForMove.setText("Play again? Enter [Q]uit or [ ] to continue:");
