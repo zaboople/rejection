@@ -2,6 +2,7 @@ package main;
 import java.io.File;
 import java.io.FileInputStream;
 
+/** Acts as the command-line setup system. */
 class GameConfigSetup {
   public GameConfig config;
   public Gamble gamble;
@@ -30,7 +31,7 @@ class GameConfigSetup {
         i++;
       }
       else
-      if (args[i].equals("-w") || args[i].equals("--wager")){
+      if (args[i].equals("-w") || args[i].equals("--wager") || args[i].equals("--gamble")){
         i++;
         if (i==args.length)
           return help("Expected a number");
