@@ -64,6 +64,8 @@ public class GameConfig {
       else
         throw new InvalidPropertyException("Don't know what to do with: "+key);
     }
+    if (CARD_CORNERS+CARD_BARS+CARD_TEES+CARD_CROSSES < (BOARD_WIDTH*BOARD_HEIGHT))
+      throw new RuntimeException("Invalid configuration: There are less cards than there are cells to put them in.");
     return this;
   }
 
