@@ -21,15 +21,11 @@ class GameConfigSetup {
         return false;
       }
       else
-      if (args[i].equals("-g") || args[i].equals("--gui")){
+      if (args[i].equals("-g") || args[i].equals("--gui"))
         gui=true;
-        i++;
-      }
       else
-      if (args[i].equals("-a") || args[i].equals("--ascii")){
+      if (args[i].equals("-a") || args[i].equals("--ascii"))
         gui=false;
-        i++;
-      }
       else
       if (args[i].equals("-w") || args[i].equals("--wager") || args[i].equals("--gamble")){
         i++;
