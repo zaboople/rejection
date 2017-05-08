@@ -41,8 +41,8 @@ public class ScreenPlay implements ScreenPlayInterface {
   }
 
   /**
-   * This is the verymost beginning of a game. The corresponding callback
-   * is betEntered().
+   * This is the verymost beginning of a game. If we are gambling, the corresponding callback
+   * is betEntered(), otherwise we hop straight to startGame().
    */
   private void startBet() {
     screen.setBoard(null);
@@ -79,7 +79,7 @@ public class ScreenPlay implements ScreenPlayInterface {
   }
 
   /**
-   * After bet entry, this acts as launch point to set up the Screen class
+   * After bet/game start, this acts as launch point to set up the Screen class
    * with the latest state and wait for the callback to moveEntered().
    */
   private void updateDisplay() {
