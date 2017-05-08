@@ -2,13 +2,14 @@ package main;
 import java.io.File;
 import java.io.FileInputStream;
 
-public class GameConfigSetup {
+class GameConfigSetup {
   public GameConfig config;
   public Gamble gamble;
+  public boolean gui=true;
 
   private static boolean help(String error) {
     if (error!=null) System.out.println("Error: "+error);
-    System.out.println("Usage: [--config <file>] [--wager <amount>]");
+    System.out.println("Usage: [--config <file>] [--wager <amount>] [--gui|--ascii]");
     return error==null;
   }
 
@@ -17,6 +18,16 @@ public class GameConfigSetup {
       if (args[i].equals("-h") || args[i].equals("--help")){
         help(null);
         return false;
+      }
+      else
+      if (args[i].equals("-g") || args[i].equals("--gui")){
+        gui=true;
+        i++;
+      }
+      else
+      if (args[i].equals("-a") || args[i].equals("--ascii")){
+        gui=false;
+        i++;
       }
       else
       if (args[i].equals("-w") || args[i].equals("--wager")){

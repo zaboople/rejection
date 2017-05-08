@@ -1,5 +1,4 @@
 package main.swang;
-import main.GameConfigSetup;
 import main.GameConfig;
 import main.Gamble;
 import main.Game;
@@ -7,17 +6,18 @@ import main.GameState;
 
 /**
  * This is the "mirror" to Screen in terms of state management: Here, we advance
- * state, and there we react to it and send user input callbacks to here.
+ * state, and there we react to it and send user input callbacks to here. We also boot up
+ * from here.
  */
 public class ScreenPlay implements ScreenPlayInterface {
 
-  /** Entry point for the whole shebang. */
-  public static void main(String[] args) throws Exception {
-    GameConfigSetup setup=new GameConfigSetup();
-    if (!setup.go(args))
-      System.exit(1);
-    else
-      Screen.startup(new ScreenPlay(setup.config, setup.gamble), true);
+  /**
+   * Entry point for the whole shebang. Doing full-screen is currently
+   * not configurable, so it's usually set to true unless I was messing
+   * around and forgot.
+   */
+  public static void boot(GameConfig config, Gamble gamble) throws Exception {
+    Screen.startup(new ScreenPlay(config, gamble), true);
   }
 
   private final GameConfig config;

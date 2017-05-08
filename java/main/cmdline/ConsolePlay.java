@@ -6,7 +6,6 @@ import java.util.HashMap;
 import main.Card;
 import main.Game;
 import main.GameConfig;
-import main.GameConfigSetup;
 import main.Gamble;
 
 /**
@@ -15,6 +14,7 @@ import main.Gamble;
  */
 public class ConsolePlay {
 
+  /** Minor utility class */
   private static class GameResult {
     final boolean won, bonus;
     GameResult(boolean won, boolean bonus) {
@@ -23,22 +23,11 @@ public class ConsolePlay {
     }
   }
 
-  /////////////////////////////////////////
-  // STATIC COMMAND-LINE INITIALIZATION: //
-  /////////////////////////////////////////
+  /////////////////////
+  // INITIALIZATION: //
+  /////////////////////
 
-  private static AsciiBoard boardRender;
-
-  public static void main(String[] args) throws Exception {
-    GameConfigSetup setup = new GameConfigSetup();
-    if (!setup.go(args)) System.exit(1);
-    new ConsolePlay(setup.config, setup.gamble).play();
-  }
-
-  /////////////////////////////
-  // PRIVATE INITIALIZATION: //
-  /////////////////////////////
-
+  private final AsciiBoard boardRender;
   private final BufferedReader reader;
   private final GameConfig config;
   private final Gamble gamble;
@@ -46,7 +35,7 @@ public class ConsolePlay {
   private final StringBuilder outBuffer=new StringBuilder();
   private Game game;
 
-  private ConsolePlay(GameConfig config, Gamble gamble) throws Exception {
+  public ConsolePlay(GameConfig config, Gamble gamble) throws Exception {
     boardRender=new AsciiBoard(System.out, true);
     this.config=config;
     this.gamble=gamble;
@@ -64,7 +53,7 @@ public class ConsolePlay {
   // GAME-PLAYING SESSION: //
   ///////////////////////////
 
-  private void play() throws Exception {
+  public void play() throws Exception {
     boolean keepPlaying=true;
     while (keepPlaying){
       if (gamble!=null)
