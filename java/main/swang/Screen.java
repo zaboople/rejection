@@ -78,7 +78,7 @@ public class Screen {
   private JFrame win;
   private CardPanel cardPanel;
   private JLabel
-    lblStrikeAlert,
+    lblAlert,
 
     lblForKeys,
     lblKeys,
@@ -148,21 +148,21 @@ public class Screen {
 
     if (state.isGameStart()) {
       setBet(gamble);
-      lblStrikeAlert.setText(" ");
+      lblAlert.setText(" ");
       setVisiblePanel(pnlPlay);
-      resizeAlert();
+      centerAlertPanel();
       lblForMove.setText(
         gamble!=null && gamble.canDoubleDown()
           ?"Enter [D]ouble down or [ ] to play first card:"
           :"Press enter [ ] to play first card:"
       );
       jtfMove.setText("");
-      lblStrikeAlert.setText(" ");
+      lblAlert.setText(" ");
       jtfMove.requestFocusInWindow();
     }
     else
     if (state.isWaitingStriked()) {
-      setStrikeAlert();
+      setAlert(Color.RED, "!!!!!! STRIKE !!!!!!");
       lblForMove.setText("Strike hit. Press enter:");
       setVisiblePanel(pnlPlay);
       jtfMove.setText("");;
@@ -170,8 +170,8 @@ public class Screen {
     }
     else
     if (state.isCardPlaced()) {
-      if (!" ".equals(lblStrikeAlert.getText()))
-        lblStrikeAlert.setText(" ");
+      if (!" ".equals(lblAlert.getText()))
+        lblAlert.setText(" ");
       String lblText="[R]otate, [S]witch, [G]ive up or [ ]Accept:";
       if (!lblText.equals(lblForMove.getText()))
         lblForMove.setText(lblText);
@@ -205,14 +205,10 @@ public class Screen {
 
   }
 
-  private void setStrikeAlert() {
-    setAlert(Color.RED, "!!!!!! STRIKE !!!!!!");
-  }
-
   private void setAlert(Color color, String text) {
-    resizeAlert();
-    lblStrikeAlert.setForeground(color);
-    lblStrikeAlert.setText(text);
+    centerAlertPanel();
+    lblAlert.setForeground(color);
+    lblAlert.setText(text);
   }
 
 
@@ -254,8 +250,8 @@ public class Screen {
     pnlBet=newBlackPanel();
     pnlAlert=newBlackPanel();
 
-    lblStrikeAlert=new BlackLabel("STRIKE");
-    lblStrikeAlert.setForeground(Color.RED);
+    lblAlert=new BlackLabel("STRIKE");
+    lblAlert.setForeground(Color.RED);
     lblKeys=new BlackLabel(" 0 / 0 ******");
     lblForKeys=new BlackLabel("Keys:");
     lblForStrikes=new BlackLabel("Strikes:");
@@ -273,7 +269,7 @@ public class Screen {
 
     allTextComps=new JComponent[]{
       lblEnterBet1, lblEnterBet2, jtfBet,
-      lblStrikeAlert, lblForKeys, lblKeys, lblForStrikes, lblStrikes, lblBetPrefix, lblBet, lblForMove, jtfMove
+      lblAlert, lblForKeys, lblKeys, lblForStrikes, lblStrikes, lblBetPrefix, lblBet, lblForMove, jtfMove
     };
     allNothings=new JComponent[6];
     for (int i=0; i<allNothings.length; i++) allNothings[i]=new BlackLabel(" ");
@@ -325,7 +321,7 @@ public class Screen {
       .addX(
         new GridBug(pnlAlert)
           .insets(0)
-          .weightX(0).add(lblStrikeAlert)
+          .weightX(0).add(lblAlert)
           .getContainer()
       )
       .fill(GridBug.NONE).weightX(0).gridWidth(1)
@@ -437,10 +433,12 @@ public class Screen {
         cardPanel.setFont(font);
       }
     }
-    resizeAlert();
+
+    // 3. And some loose-endedness:
+    centerAlertPanel();
   }
 
-  private void resizeAlert() {
+  private void centerAlertPanel() {
     Dimension pnlAlertSize=pnlAlert.getSize();
     int cardPanelWide=cardPanel.getActualWidth();
     if (pnlAlertSize.height > 0 && cardPanelWide!=pnlAlertSize.width && cardPanelWide>lblForMove.getSize().width){

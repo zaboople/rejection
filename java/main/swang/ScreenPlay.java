@@ -6,8 +6,8 @@ import main.Game;
 import main.GameState;
 
 /**
- * Screen play attempts to control as much of the interaction as possible
- * although Screen really ends up being the mirror to it.
+ * This is the "mirror" to Screen in terms of state management: Here, we advance
+ * state, and there we react to it and send user input callbacks to here.
  */
 public class ScreenPlay implements ScreenPlayInterface {
 
@@ -17,7 +17,7 @@ public class ScreenPlay implements ScreenPlayInterface {
     if (!setup.go(args))
       System.exit(1);
     else
-      Screen.startup(new ScreenPlay(setup.config, setup.gamble), false);
+      Screen.startup(new ScreenPlay(setup.config, setup.gamble), true);
   }
 
   private final GameConfig config;
