@@ -6,9 +6,10 @@ Anyhow, I decided to make it fun for *me* to play. I started by making a TTY/com
 
 You can play pretty easily if you have an Oracle JDK installed and a decent unix-like shell. Type:
 
+    ./build.sh
     ./play.sh --help
 
-
 to get options, or leave off the `--help` to play some with some semi-decent defaults.
+Note that for the `--config` option, there are sample configurations in the `sample-configs` directory.
 
 

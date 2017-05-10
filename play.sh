@@ -1,3 +1,3 @@
 #!/bin/bash
 cd $(dirname $0)
-./run-any.sh main.Boot "$@"
+java -Xmx24m -classpath build main.Boot "$@"
