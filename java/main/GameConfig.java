@@ -25,15 +25,51 @@ public class GameConfig {
     CARD_TEES=24,
     CARD_CROSSES=8;
 
+  /**
+   * This is called by the Game class shortly before building the deck.
+   * Only *relative* counts have to be specified. We'll allocate according
+   * to the total cards necessary and the ratio between the requested values.
+   * (Note that strike cards have to be an actual card count and aren't affected here).
+   */
   public void ensureEnoughCards() {
-    int leftOver=CARD_CORNERS + CARD_BARS + CARD_TEES + CARD_CROSSES - (BOARD_WIDTH * BOARD_HEIGHT);
-    while (leftOver < 0) {
-      if (leftOver < 0) {leftOver++;CARD_CORNERS++;}
-      if (leftOver < 0) {leftOver++;CARD_BARS++;}
-      if (leftOver < 0) {leftOver++;CARD_TEES++;}
-      if (leftOver < 0) {leftOver++;CARD_CROSSES++;}
-    }
+    int[] revised=ensureEnough(
+      BOARD_WIDTH * BOARD_HEIGHT,
+      CARD_BARS,CARD_CORNERS,CARD_CROSSES,CARD_TEES
+    );
+    CARD_BARS=revised[1];
+    CARD_CORNERS=revised[0];
+    CARD_CROSSES=revised[3];
+    CARD_TEES=revised[2];
+    for (int c: revised) System.out.println(" "+c);
+    if (CARD_CORNERS+CARD_BARS+CARD_TEES+CARD_CROSSES < (BOARD_WIDTH*BOARD_HEIGHT))
+      throw new RuntimeException("Invalid configuration: There are less cards than there are cells to put them in.");
   }
+  private int[] ensureEnough(int boardSize, int... typeCounts) {
+
+    // Ratio:
+    int ratioBottom=0;
+    for (int tc: typeCounts) ratioBottom+=tc;
+    if (ratioBottom==0) throw new IllegalArgumentException("All card counts are zero");
+
+    // Allocate:
+    int[] decided=new int[typeCounts.length];
+    for (int i=0; i<typeCounts.length; i++)
+      decided[i]=(boardSize * typeCounts[i]) / ratioBottom;
+
+    // Off by 1 is the hardest part:
+    int remaining=boardSize;
+    for (int i: decided)
+      remaining-=i;
+    while (remaining>0)
+      for (int i=0; remaining>0 && i<decided.length; i++)
+        if (decided[i]!=0) {
+          decided[i]++;
+          remaining--;
+        }
+
+    return decided;
+  }
+
   public GameConfig load(java.io.InputStream inStream) throws InvalidPropertyException, IOException {
     Properties props=new Properties();
     props.load(new InputStreamReader(inStream));
@@ -64,8 +100,6 @@ public class GameConfig {
       else
         throw new InvalidPropertyException("Don't know what to do with: "+key);
     }
-    if (CARD_CORNERS+CARD_BARS+CARD_TEES+CARD_CROSSES < (BOARD_WIDTH*BOARD_HEIGHT))
-      throw new RuntimeException("Invalid configuration: There are less cards than there are cells to put them in.");
     return this;
   }
 
