@@ -28,8 +28,10 @@ import org.tmotte.common.swang.GridBug;
 import org.tmotte.common.swang.CurrentOS;
 import org.tmotte.common.swang.KeyMapper;
 
+/** Does all the swing-y stuff. Uses CardPanel to show the cards. */
 public class Screen {
 
+  /** Initializes a new instance of Screen and calls back spi.init() when finished. */
   public static void startup(ScreenPlayInterface spi, boolean fullScreen) {
     javax.swing.SwingUtilities.invokeLater(()-> {
       try {
@@ -63,8 +65,7 @@ public class Screen {
     lblBet,
     lblForMove,
 
-    lblEnterBet1,
-    lblEnterBet2
+    lblEnterBet1
   ;
   private JComponent[] allNothings, allTextComps, allJTFs, textPanels;
   private int lblNothingIndex=-1;
@@ -72,12 +73,12 @@ public class Screen {
   private JPanel pnlPlay, pnlBet, pnlAlert;
   private CurrentOS currentOS;
 
-  Screen(ScreenPlayInterface watcher, boolean fullScreen) {
+  private Screen(ScreenPlayInterface watcher, boolean fullScreen) {
     this.watcher=watcher;
     this.fullScreen=fullScreen;
   }
 
-  public void show() {
+  private void show() {
     init();
     pnlPlay.setVisible(false);
     pnlBet.setVisible(false);
@@ -86,15 +87,19 @@ public class Screen {
     win.toFront();
   }
 
-  public void setBoard(BoardView board)  {
+  /////////////////////////////////////////////////////
+  // EXPOSED TO ScreenPlay TO RECEIVE STATE CHANGES: //
+  /////////////////////////////////////////////////////
+
+  void setBoard(BoardView board)  {
     cardPanel.setBoard(board);
   }
-  public void setStateBet(int available) {
+  void setStateBet(int available) {
     lblEnterBet1.setText(String.format("Enter bet for this round, limit $%d:", available));
     setVisiblePanel(pnlBet);
     jtfBet.requestFocusInWindow();
   }
-  public void setBet(Gamble gamble) {
+  void setBet(Gamble gamble) {
     lblBetPrefix.setText(gamble==null ?" " :"Bet:");
     lblBet.setText(gamble==null ?" " :String.format(" $%d of %d", gamble.getBet(), gamble.getTotal()));
   }
@@ -238,12 +243,11 @@ public class Screen {
     jtfMove.setColumns(2);
 
     lblEnterBet1=new BlackLabel("Bet for this game,");
-    lblEnterBet2=new BlackLabel("banked $XXXXXX:");
     jtfBet=new BlackJTF();
     jtfBet.setColumns(10);
 
     allTextComps=new JComponent[]{
-      lblEnterBet1, lblEnterBet2, jtfBet,
+      lblEnterBet1, jtfBet,
       lblAlert, lblForKeys, lblKeys, lblForStrikes, lblStrikes, lblBetPrefix, lblBet, lblForMove, jtfMove
     };
     allNothings=new JComponent[6];
@@ -485,13 +489,5 @@ public class Screen {
       setHorizontalAlignment(LEFT);
       setCaretColor(Color.GRAY);// Leave alone and get no cursor
     }
-  }
-
-  /////////////
-  /// TEST: ///
-  /////////////
-
-  public static void main(final String[] args) throws Exception {
-    startup(new ScreenPlayTest(), false);
   }
 }

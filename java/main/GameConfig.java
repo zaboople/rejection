@@ -20,27 +20,68 @@ public class GameConfig {
     STRIKE_LIMIT=3,
     KEYS=4,
     BONUSES=6,
-    CARD_CORNERS=24,
-    CARD_BARS=8,
-    CARD_TEES=24,
-    CARD_CROSSES=8;
+    CARD_CORNERS=3,
+    CARD_BARS=1,
+    CARD_TEES=3,
+    CARD_CROSSES=1;
+
+  /** Sets things up with built-in default configuration. */
+  public GameConfig() {
+    ensureEnoughCards();
+  }
+  /** Configures using the given Properties. */
+  public GameConfig(Properties props) throws InvalidPropertyException {
+    for (String key: props.stringPropertyNames()){
+      String s=key.toLowerCase();
+      if (s.startsWith("board_w") || s.startsWith("w")) BOARD_WIDTH=getInt(props, key);
+      else
+      if (s.startsWith("board_h") || s.startsWith("h")) BOARD_HEIGHT=getInt(props, key);
+      else
+      if (s.startsWith("strike_c")) STRIKE_CARDS=getInt(props, key);
+      else
+      if (s.startsWith("strike_l")) STRIKE_LIMIT=getInt(props, key);
+      else
+      if (s.startsWith("k")) KEYS=getInt(props, key);
+      else
+      if (s.startsWith("bo")) BONUSES=getInt(props, key);
+      else
+      if (s.startsWith("card_corners") || s.startsWith("corner")) CARD_CORNERS=getInt(props, key);
+      else
+      if (s.startsWith("card_bars") || s.startsWith("bar")) CARD_BARS=getInt(props, key);
+      else
+      if (s.startsWith("card_tees") || s.startsWith("tee")) CARD_TEES=getInt(props, key);
+      else
+      if (s.startsWith("card_crosses") || s.startsWith("cross")) CARD_CROSSES=getInt(props, key);
+      else
+        throw new InvalidPropertyException("Don't know what to do with: "+key);
+    }
+    ensureEnoughCards();
+  }
+  public GameConfig(InputStream inStream) throws InvalidPropertyException, IOException {
+    this(getProps(inStream));
+  }
+
+  //////////////////////
+  // PRIVATE METHODS: //
+  //////////////////////
 
   /**
-   * This is called by the Game class shortly before building the deck.
-   * Only *relative* counts have to be specified. We'll allocate according
+   * Only *relative* card counts have to be specified. We'll allocate according
    * to the total cards necessary and the ratio between the requested values.
    * (Note that strike cards have to be an actual card count and aren't affected here).
    */
-  public void ensureEnoughCards() {
+  private void ensureEnoughCards() {
     int[] revised=ensureEnough(
       BOARD_WIDTH * BOARD_HEIGHT,
-      CARD_BARS,CARD_CORNERS,CARD_CROSSES,CARD_TEES
+      CARD_BARS,
+      CARD_CORNERS,
+      CARD_CROSSES,
+      CARD_TEES
     );
     CARD_BARS=revised[1];
     CARD_CORNERS=revised[0];
     CARD_CROSSES=revised[3];
     CARD_TEES=revised[2];
-    for (int c: revised) System.out.println(" "+c);
     if (CARD_CORNERS+CARD_BARS+CARD_TEES+CARD_CROSSES < (BOARD_WIDTH*BOARD_HEIGHT))
       throw new RuntimeException("Invalid configuration: There are less cards than there are cells to put them in.");
   }
@@ -70,40 +111,8 @@ public class GameConfig {
     return decided;
   }
 
-  public GameConfig load(java.io.InputStream inStream) throws InvalidPropertyException, IOException {
-    Properties props=new Properties();
-    props.load(new InputStreamReader(inStream));
-    return load(props);
-  }
-  public GameConfig load(Properties props) throws InvalidPropertyException {
-    for (String key: props.stringPropertyNames()){
-      String s=key.toLowerCase();
-      if (s.startsWith("board_w") || s.startsWith("w")) BOARD_WIDTH=getInt(props, key);
-      else
-      if (s.startsWith("board_h") || s.startsWith("h")) BOARD_HEIGHT=getInt(props, key);
-      else
-      if (s.startsWith("strike_c")) STRIKE_CARDS=getInt(props, key);
-      else
-      if (s.startsWith("strike_l")) STRIKE_LIMIT=getInt(props, key);
-      else
-      if (s.startsWith("k")) KEYS=getInt(props, key);
-      else
-      if (s.startsWith("bo")) BONUSES=getInt(props, key);
-      else
-      if (s.startsWith("card_corners") || s.startsWith("corner")) CARD_CORNERS=getInt(props, key);
-      else
-      if (s.startsWith("card_bars") || s.startsWith("bar")) CARD_BARS=getInt(props, key);
-      else
-      if (s.startsWith("card_tees") || s.startsWith("tee")) CARD_TEES=getInt(props, key);
-      else
-      if (s.startsWith("card_crosses") || s.startsWith("cross")) CARD_CROSSES=getInt(props, key);
-      else
-        throw new InvalidPropertyException("Don't know what to do with: "+key);
-    }
-    return this;
-  }
 
-  private int getInt(Properties p, String key) throws InvalidPropertyException {
+  private static int getInt(Properties p, String key) throws InvalidPropertyException {
     String s=p.getProperty(key);
     if (s==null)
       throw new InvalidPropertyException("Null/blank value for: \""+key+"\"");
@@ -114,8 +123,16 @@ public class GameConfig {
       throw new InvalidPropertyException("Key \""+key+"\" has invalid number: \""+s+"\"");
     }
   }
-  private class InvalidPropertyException extends Exception {
+
+  private static class InvalidPropertyException extends Exception {
     public InvalidPropertyException(String msg) {super(msg);}
   }
+
+  private static Properties getProps(InputStream inStream) throws IOException {
+    Properties props=new Properties();
+    props.load(new InputStreamReader(inStream));
+    return props;
+  }
+
 }
 

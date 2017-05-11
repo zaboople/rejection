@@ -45,8 +45,8 @@ class GameConfigSetup {
         File file=new File(a);
         if (!file.exists())
           return help("Not a file: "+a);
-        try {
-          config=new GameConfig().load(new FileInputStream(file));
+        try (FileInputStream instr=new FileInputStream(file)) {
+          config=new GameConfig(instr);
         } catch (Exception e) {
           return help(e.getMessage());
         }

@@ -36,7 +36,6 @@ public class Game {
     this.config=c;
     this.state=new GameState(config.STRIKE_LIMIT, config.KEYS);
     board=new Board(randomizer, c.BOARD_WIDTH, c.BOARD_HEIGHT).reset(c.KEYS, c.BONUSES);
-    config.ensureEnoughCards();
     deck=new Deck(
       randomizer, c.STRIKE_CARDS,
       c.CARD_CORNERS, c.CARD_BARS, c.CARD_TEES, c.CARD_CROSSES

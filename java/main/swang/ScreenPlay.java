@@ -25,7 +25,7 @@ public class ScreenPlay implements ScreenPlayInterface {
   private Screen screen;
   private Game game;
 
-  public ScreenPlay(GameConfig config, Gamble gamble) {
+  private ScreenPlay(GameConfig config, Gamble gamble) {
     this.config=config;
     this.gamble=gamble;
   }
@@ -69,7 +69,7 @@ public class ScreenPlay implements ScreenPlayInterface {
   }
 
   /**
-   * Creates a new game after betting is done, and sets up the first callback to
+   * Creates a new game after betting is done/ignored, and sets up the first callback to
    * moveEntered.
    */
   private void startGame() {
@@ -79,7 +79,7 @@ public class ScreenPlay implements ScreenPlayInterface {
   }
 
   /**
-   * After bet/game start, this acts as launch point to set up the Screen class
+   * After game start, this acts as launch point to set up the Screen class
    * with the latest state and wait for the callback to moveEntered().
    */
   private void updateDisplay() {
