@@ -66,7 +66,7 @@ public class GameConfig {
   //////////////////////
 
   /**
-   * Only *relative* card counts have to be specified. We'll allocate according
+   * Only _relative_ card counts have to be specified. We'll allocate according
    * to the total cards necessary and the ratio between the requested values.
    * (Note that strike cards have to be an actual card count and aren't affected here).
    */
