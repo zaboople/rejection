@@ -56,7 +56,6 @@ public class Screen {
   private CardPanel cardPanel;
   private JLabel
     lblAlert,
-
     lblForKeys,
     lblKeys,
     lblForStrikes,
