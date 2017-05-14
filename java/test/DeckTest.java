@@ -9,6 +9,11 @@ import java.util.stream.Stream;
 import java.util.stream.IntStream;
 import java.security.SecureRandom;
 
+/**
+ * Given inputs for the number of each type of card (strike, bar, corner, cross, tee),
+ * counts the number of times each card type appears in each possible deck index
+ * over 10000 random decks.
+ */
 public class DeckTest {
   public static void main(String[] args) {
     test(args);

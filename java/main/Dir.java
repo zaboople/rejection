@@ -1,4 +1,9 @@
 package main;
+
+/**
+ * "Dir" stands for "Direction". Holds constants to stand for directions; also some
+ * clever supporting arrays that aren't actually used very much at all.
+ */
 public class Dir {
   public static final byte LEFT=1;
   public static final byte UP=2;

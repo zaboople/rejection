@@ -37,8 +37,8 @@ public class Game {
     this.state=new GameState(config.STRIKE_LIMIT, config.KEYS);
     board=new Board(randomizer, c.BOARD_WIDTH, c.BOARD_HEIGHT).reset(c.KEYS, c.BONUSES);
     deck=new Deck(
-      randomizer, c.STRIKE_CARDS,
-      c.CARD_CORNERS, c.CARD_BARS, c.CARD_TEES, c.CARD_CROSSES
+      randomizer,
+      c.STRIKE_CARDS, c.CARD_CORNERS, c.CARD_BARS, c.CARD_TEES, c.CARD_CROSSES
     );
   }
 

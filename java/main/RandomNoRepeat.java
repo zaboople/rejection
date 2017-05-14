@@ -17,6 +17,7 @@ public class RandomNoRepeat {
   public RandomNoRepeat(int size) {
     this(new SecureRandom(), size);
   }
+  /** Creates an instance allowing range between 0 and size, exclusive. */
   public RandomNoRepeat(SecureRandom rand, int size) {
     this(rand, new boolean[size]);
   }
@@ -40,6 +41,12 @@ public class RandomNoRepeat {
     used[n]=true;
     return n;
   }
+  /**
+   * Creates an array of size count, and fills it with numbers randomly selected
+   * from our designated range. Note that numbers previously selected by either fill() or next()
+   * will not be used.
+   * @throws IllegalStateException If we run out of values to use.
+   */
   public int[] fill(int count) {
     final int[] array=new int[count];
     for (int i=0; i<array.length; i++)

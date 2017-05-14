@@ -1,4 +1,6 @@
 package main;
+
+/** Represents the overall amount wagered, and the bet for the current game round.*/
 public class Gamble {
   final int startWith;
   private int total;
