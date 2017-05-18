@@ -10,7 +10,15 @@ class GameConfigSetup {
 
   private static boolean help(String error) {
     if (error!=null) System.out.println("Error: "+error);
-    System.out.println("Usage: [--config <file>] [--wager <amount>] [--gui|--ascii]");
+    System.out.println(
+      "Usage: [--config <file>] [--wager <amount>] [--gui|--ascii]\n"+
+      "  --config Use a configuration file. Look in sample-configs.\n"+
+      "  --wager  Enable betting. The <amount> is your total wager.\n"+
+      "  --gui    \n"+
+      "  --ascii  GUI mode (default) is better, even though it doesn't \n"+
+      "           try that hard to be \"graphical\". \n"+
+      "           Hidden feature: Command/Ctrl-W will exit anytime. \n"
+    );
     return error==null;
   }
 

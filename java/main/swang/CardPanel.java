@@ -90,6 +90,7 @@ public class CardPanel extends JPanel {
     // Recompute stuff:
     boolean layoutChanged=dim.width!=currWidth || dim.height!=currHeight,
             fontChanged=!graphics.getFont().equals(font);
+    System.out.println("FUCK "+graphics.getFont()+" "+font);
     if (layoutChanged)
       recomputeLayoutOnResize(dim);
     if (fontChanged)
@@ -179,6 +180,7 @@ public class CardPanel extends JPanel {
       Graphics graphics, Color color, int left, int top, Dimension offsets, String achar
     ) {
     graphics.setColor(color);
+    graphics.setFont(font);
     graphics.drawString(achar, left+offsets.width, top+offsets.height);
   }
 
@@ -293,6 +295,7 @@ public class CardPanel extends JPanel {
   private void recomputePathOffsets() {
     int avgFontTopOff=fontOffsets[fontIndexKey].height,
         avgFontLeftOff=fontOffsets[fontIndexKey].width; //DERP
+    System.out.print(fontOffsets[fontIndexBonus].width+""+fontOffsets[fontIndexStart].width+""+fontOffsets[fontIndexFinish].width);
 
     vPathLeftOff=Math.round((cardWide-dashWide)/2.0f);
     vPathHigh=cardHigh - (avgFontTopOff + (dashWide * 2));
