@@ -106,6 +106,13 @@ public final class Card {
       (hasDown ? Dir.DOWN :0)
     );
   }
+
+  /**
+   * @param canPlayTo These are the directions of open cells one can play to from the chosen board position. We want the
+   *   card's outgoing paths to point to as many as of these as possible, and not point to "dead" areas.
+   * @param cameFrom This is the direction we played from, so the card must have a path pointing this way. It is optionally
+   *   zero, however, meaning that it's the first card played on the board.
+   */
   public Card getOptimalRotationFor(byte canPlayTo, byte cameFrom) {
     boolean[] counter={false, false, false, false};
     if (pathType==CROSS) return this;
@@ -167,6 +174,14 @@ public final class Card {
     sb.append(hasPathDown() ? "D" :"_");
     sb.append(hasPathUp() ? "U" :"_");
     return sb.toString();
+  }
+  public String toStringShort() {
+    if (isStrike()) return "!";
+    if (isPathCorner()) return "L";
+    if (isPathTee()) return "T";
+    if (isPathBar()) return "-";
+    if (isPathCross()) return "+";
+    return "?";
   }
 
 }

@@ -75,6 +75,41 @@ public class Deck {
   public int size() {
     return cards.length;
   }
+  public boolean hasNext() {
+    return cardIndex<cards.length;
+  }
 
+
+  /** Leftover stuff. I thought maybe the sequential setup of raw cards
+      was causing bunching-up of card types in the shuffled deck. */
+  private void alternateRawSetup(Card[] rawCards, int[] distributions) {
+    int[][] distAllocs=new int[distributions.length][];
+    for (int d=0; d<distributions.length; d++){
+      int allocPer=distributions[d];
+      distAllocs[d]=new int[allocPer];
+    }
+    for (int d=0; d<distributions.length; d++){
+      int alloc=distributions[d];
+      int spread=cards.length / alloc;
+      int index=spread+d;
+      while (alloc>0) {
+        while (rawCards[index]!=null) {
+          //System.out.print("Z"+d+"_"+alloc+" ");
+          index++;
+          if (index>=cards.length)
+            index=0;
+        }
+        alloc--;
+        rawCards[index]=possible[d];
+        index+=spread;
+        if (index>=cards.length)
+          index=0;
+      }
+    }
+    //System.out.println();
+    for (Card c: rawCards)
+      System.out.print(c.toString().substring(0,1));
+    System.out.println();
+  }
 
 }

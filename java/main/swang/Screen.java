@@ -376,7 +376,7 @@ public class Screen {
   ////////////////////////
 
   private boolean textActuallyEntered(int keyCode, JTextField entryBox) {
-    return keyCode==KeyEvent.VK_ENTER || !"".equals(entryBox.getText().trim());
+    return keyCode==KeyEvent.VK_ENTER || !"".equals(entryBox.getText());
   }
 
   /** This seems to get invoked before rendering, so we don't have to issue a repaint() */
