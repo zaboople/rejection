@@ -321,7 +321,6 @@ public class CardPanel extends JPanel {
       Dimension d=fontOffsets[i];
       if (d.height < minFontTopOff) minFontTopOff=d.height;
       if (d.width < minFontLeftOff) minFontLeftOff=d.width;
-      d.width=d.width;
     }
 
     vPathLeftOff=Math.round((cardWide-dashWide)/2.0f);
