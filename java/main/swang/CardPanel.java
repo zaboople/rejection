@@ -32,8 +32,8 @@ public class CardPanel extends JPanel {
     dashWide, wDashLen, vDashLen,
     border, cardWide, cardHigh,
     actualWide, actualHigh, gapLen,
-    vPathLeftOff, vPathHigh, vPathDownTopOff,
-    hPathTopOff, hPathWide, hPathRightOff;
+    vPathLeftOff, vPathHighWithSymbol, vPathHighWithoutSymbol, vPathDownTopOffWithSymbol,
+    hPathTopOff, hPathWideWithSymbol, hPathWideWithoutSymbol, hPathRightOffWithSymbol;
 
   private final short fontIndexKey=0, fontIndexBonus=1, fontIndexStart=2, fontIndexFinish=3;
   private final Dimension[] fontOffsets={null, null, null, null};
@@ -150,6 +150,7 @@ public class CardPanel extends JPanel {
       int left=border+dashWide;
       for (int c=0; c<cols; c++) {
         Cell cell=board.getCell(r, c);
+        boolean hasSymbol=true;
         if (cell.isKey())
           drawCenterSymbol(graphics, Color.GREEN, left, top, fontOffsets[fontIndexKey], "K");
         else
@@ -161,17 +162,26 @@ public class CardPanel extends JPanel {
         else
         if (board.isFinish(r, c))
           drawCenterSymbol(graphics, Color.MAGENTA, left, top, fontOffsets[fontIndexFinish], "F");
+        else
+          hasSymbol=false;
         Card card=board.getCard(r, c);
         if (card!=null) {
           graphics.setColor(Color.WHITE);
+          int
+            vPathHigh=hasSymbol ?vPathHighWithSymbol :vPathHighWithoutSymbol,
+            hPathWide=hasSymbol ?hPathWideWithSymbol :hPathWideWithoutSymbol;
           if (card.hasPathUp())
             graphics.fillRect(left+vPathLeftOff, top+dashWide, dashWide, vPathHigh);
-          if (card.hasPathDown())
-            graphics.fillRect(left+vPathLeftOff, top+vPathDownTopOff, dashWide, vPathHigh);
+          if (card.hasPathDown()) {
+            int pathTop=hasSymbol ?top+vPathDownTopOffWithSymbol :top+vPathHighWithoutSymbol;
+            graphics.fillRect(left+vPathLeftOff, pathTop, dashWide, vPathHigh);
+          }
           if (card.hasPathLeft())
             graphics.fillRect(left+dashWide, top+hPathTopOff, hPathWide, dashWide);
-          if (card.hasPathRight())
-            graphics.fillRect(left+hPathRightOff, top+hPathTopOff, hPathWide, dashWide);
+          if (card.hasPathRight()) {
+            int pathLeft=hasSymbol ?left+hPathRightOffWithSymbol :left+hPathWideWithoutSymbol;
+            graphics.fillRect(pathLeft, top+hPathTopOff, hPathWide, dashWide);
+          }
         }
         left+=cardWide+dashWide;
       }
@@ -305,21 +315,26 @@ public class CardPanel extends JPanel {
    * card path drawing.
    */
   private void recomputePathOffsets() {
-    int avgFontTopOff=fontOffsets[0].height,
-        avgFontLeftOff=fontOffsets[0].width;
+    int minFontTopOff=fontOffsets[0].height,
+        minFontLeftOff=fontOffsets[0].width;
     for (int i=1; i<fontOffsets.length; i++) {
       Dimension d=fontOffsets[i];
-      if (d.height < avgFontTopOff) avgFontTopOff=d.height;
-      if (d.width < avgFontLeftOff) avgFontLeftOff=d.width;
+      if (d.height < minFontTopOff) minFontTopOff=d.height;
+      if (d.width < minFontLeftOff) minFontLeftOff=d.width;
+      d.width=d.width;
     }
 
     vPathLeftOff=Math.round((cardWide-dashWide)/2.0f);
-    vPathHigh=cardHigh - (avgFontTopOff + (dashWide * 2));
-    vPathDownTopOff=avgFontTopOff + dashWide;
+    vPathHighWithSymbol=cardHigh - (minFontTopOff + (dashWide * 2));
+    vPathDownTopOffWithSymbol=minFontTopOff + dashWide;
 
     hPathTopOff=Math.round((cardHigh-dashWide)/2.0f);
-    hPathWide=avgFontLeftOff-(dashWide*2);
-    hPathRightOff=cardWide - (dashWide+hPathWide);
+    hPathWideWithSymbol=minFontLeftOff-(dashWide*2);
+    hPathRightOffWithSymbol=cardWide-(dashWide+hPathWideWithSymbol);
+
+    //These are a little bizarre in their definition but they work:
+    vPathHighWithoutSymbol=hPathTopOff;
+    hPathWideWithoutSymbol=vPathLeftOff;
   }
 
 }
