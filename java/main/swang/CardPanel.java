@@ -272,6 +272,15 @@ public class CardPanel extends JPanel {
     fontOffsets[fontIndexStart]=recomputeTextOffset(metrics, "S");
     fontOffsets[fontIndexFinish]=recomputeTextOffset(metrics, "F");
     recomputePathOffsets();
+    /*
+      System.out.print(
+        "["+
+        fontOffsets[fontIndexBonus].width+","+
+        fontOffsets[fontIndexKey].width+","+
+        fontOffsets[fontIndexStart].width+","+
+        fontOffsets[fontIndexFinish].width+"]"
+      );
+    */
   }
   private Dimension recomputeTextOffset(FontMetrics metrics, String center) {
     //Subtract? Add? Note: For offLeft, we get the proper left; but for offTop, we have this problem
@@ -296,9 +305,13 @@ public class CardPanel extends JPanel {
    * card path drawing.
    */
   private void recomputePathOffsets() {
-    int avgFontTopOff=fontOffsets[fontIndexKey].height,
-        avgFontLeftOff=fontOffsets[fontIndexKey].width; //DERP
-    //System.out.print(fontOffsets[fontIndexBonus].width+""+fontOffsets[fontIndexStart].width+""+fontOffsets[fontIndexFinish].width);
+    int avgFontTopOff=fontOffsets[0].height,
+        avgFontLeftOff=fontOffsets[0].width;
+    for (int i=1; i<fontOffsets.length; i++) {
+      Dimension d=fontOffsets[i];
+      if (d.height < avgFontTopOff) avgFontTopOff=d.height;
+      if (d.width < avgFontLeftOff) avgFontLeftOff=d.width;
+    }
 
     vPathLeftOff=Math.round((cardWide-dashWide)/2.0f);
     vPathHigh=cardHigh - (avgFontTopOff + (dashWide * 2));
@@ -307,7 +320,6 @@ public class CardPanel extends JPanel {
     hPathTopOff=Math.round((cardHigh-dashWide)/2.0f);
     hPathWide=avgFontLeftOff-(dashWide*2);
     hPathRightOff=cardWide - (dashWide+hPathWide);
-    //System.out.println("FUCK "+cardWide+" "+avgFontWide+" "+dashWide);
   }
 
 }
