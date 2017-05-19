@@ -142,7 +142,7 @@ public class Screen {
     else
     if (state.isWaitingStriked()) {
       setAlert(Color.RED, "!!!!!! STRIKE !!!!!!");
-      lblForMove.setText("Strike hit. Press enter:");
+      lblForMove.setText("Strike hit. Press enter (or [A]):");
       setVisiblePanel(pnlPlay);
       jtfMove.setText("");;
       jtfMove.requestFocusInWindow();
@@ -151,7 +151,7 @@ public class Screen {
     if (state.isCardPlaced()) {
       if (!" ".equals(lblAlert.getText()))
         lblAlert.setText(" ");
-      String lblText="[R]otate, [S]witch, [G]ive up or [ ]Accept:";
+      String lblText="[R]otate, [S]witch, [G]ive up or [ ][A]ccept:";
       if (!lblText.equals(lblForMove.getText()))
         lblForMove.setText(lblText);
       setVisiblePanel(pnlPlay);
@@ -237,7 +237,7 @@ public class Screen {
     lblStrikes=new BlackLabel(" 0 / 0 ******");
     lblBetPrefix=new BlackLabel("Bet:");
     lblBet=new BlackLabel("$0 of $0");
-    lblForMove=new BlackLabel("[R]otate, [S]witch, [G]ive up or [ ]Accept:");
+    lblForMove=new BlackLabel("[R]otate, [S]witch, [G]ive up or [ ][A]Accept:");
     jtfMove=new BlackJTF();
     jtfMove.setColumns(2);
 

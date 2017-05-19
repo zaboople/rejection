@@ -17,7 +17,7 @@ public class ScreenPlay implements ScreenPlayInterface {
    * around and forgot.
    */
   public static void boot(GameConfig config, Gamble gamble) throws Exception {
-    Screen.startup(new ScreenPlay(config, gamble), true);
+    Screen.startup(new ScreenPlay(config, gamble), false);
   }
 
   private final GameConfig config;

@@ -42,6 +42,8 @@ public class CardPanel extends JPanel {
     wDashFixups=new int[dashCount],
     vDashFixups=new int[dashCount];
 
+  private boolean fontChanged=false;
+
   /////////////////////
   //                 //
   // INITIALIZATION: //
@@ -50,6 +52,7 @@ public class CardPanel extends JPanel {
 
   public void setFont(Font font) {
     this.font=font;
+    fontChanged=true;
   }
 
   public void setBoard(BoardView b) {
@@ -88,15 +91,14 @@ public class CardPanel extends JPanel {
     if (board==null || font==null) return;
 
     // Recompute stuff:
-    boolean layoutChanged=dim.width!=currWidth || dim.height!=currHeight,
-            fontChanged=!graphics.getFont().equals(font);
-    System.out.println("FUCK "+graphics.getFont()+" "+font);
+    boolean layoutChanged=dim.width!=currWidth || dim.height!=currHeight;
     if (layoutChanged)
       recomputeLayoutOnResize(dim);
-    if (fontChanged)
+    if (fontChanged || layoutChanged) {
       recomputeTextOffset(graphics);
-    if (fontChanged || layoutChanged)
       recomputePathOffsets();
+    }
+    fontChanged=false;
 
     // Draw stuff:
     drawBorders(graphics);
@@ -142,6 +144,7 @@ public class CardPanel extends JPanel {
 
   /** Draws the cards played so far and background symbols for keys/bonuses/start/finish. */
   private void drawCardsAndSymbols(Graphics graphics) {
+    graphics.setFont(font);
     int top=border+dashWide;
     for (int r=0; r<rows; r++){
       int left=border+dashWide;
@@ -180,7 +183,6 @@ public class CardPanel extends JPanel {
       Graphics graphics, Color color, int left, int top, Dimension offsets, String achar
     ) {
     graphics.setColor(color);
-    graphics.setFont(font);
     graphics.drawString(achar, left+offsets.width, top+offsets.height);
   }
 
@@ -269,6 +271,7 @@ public class CardPanel extends JPanel {
     fontOffsets[fontIndexBonus]=recomputeTextOffset(metrics, "B");
     fontOffsets[fontIndexStart]=recomputeTextOffset(metrics, "S");
     fontOffsets[fontIndexFinish]=recomputeTextOffset(metrics, "F");
+    recomputePathOffsets();
   }
   private Dimension recomputeTextOffset(FontMetrics metrics, String center) {
     //Subtract? Add? Note: For offLeft, we get the proper left; but for offTop, we have this problem
@@ -295,7 +298,7 @@ public class CardPanel extends JPanel {
   private void recomputePathOffsets() {
     int avgFontTopOff=fontOffsets[fontIndexKey].height,
         avgFontLeftOff=fontOffsets[fontIndexKey].width; //DERP
-    System.out.print(fontOffsets[fontIndexBonus].width+""+fontOffsets[fontIndexStart].width+""+fontOffsets[fontIndexFinish].width);
+    //System.out.print(fontOffsets[fontIndexBonus].width+""+fontOffsets[fontIndexStart].width+""+fontOffsets[fontIndexFinish].width);
 
     vPathLeftOff=Math.round((cardWide-dashWide)/2.0f);
     vPathHigh=cardHigh - (avgFontTopOff + (dashWide * 2));
