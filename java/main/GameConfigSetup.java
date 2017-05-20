@@ -10,17 +10,18 @@ public class GameConfigSetup {
   public boolean guiFullScreen=true;
 
   private static boolean help(String error) {
-    if (error!=null) System.out.println("Error: "+error);
+    if (error!=null) System.out.println("\nError: "+error);
     System.out.println(
-      "Usage: [--config <file>] [--wager <amount>] [--gui|--ascii]\n"+
-      "  --config Use a configuration file. Look in sample-configs.\n"+
-      "  --wager  Enable betting. The <amount> is your total wager.\n"+
+      "\n"+
+      "Usage: [--config <file>] [--wager <amount>] [--gui|--ascii] [--full-screen-off] [--help]\n"+
+      "  --config Use a configuration <file>. Look in sample-configs.\n"+
+      "  --wager  Enable betting. The <amount> is your total wager; bet some of this each round.\n"+
       "  --gui    \n"+
-      "  --ascii  GUI mode (default) is better, even though it doesn't \n"+
-      "           try that hard to be \"graphical\". \n"+
+      "  --ascii  GUI mode (default) is better, even though it doesn't try that hard to be \"graphical\".\n"+
       "           Hidden feature: Command/Ctrl-W will exit anytime. \n"+
       "  --full-screen-off\n"+
-      "           Turns off full-screen mode when using --gui.\n"
+      "           Turns off full-screen mode when using --gui.\n"+
+      "  --help   Show this help screen\n"
     );
     return error==null;
   }

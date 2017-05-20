@@ -24,6 +24,7 @@ public class CardPanel extends JPanel {
   //                     //
   /////////////////////////
 
+  private final Color grayColor=new Color(50,50,50);
   private BoardView board;
   private Font font;
   private int rows=2, cols=2;
@@ -113,7 +114,7 @@ public class CardPanel extends JPanel {
 
   /** Draws the playing grid. */
   private void drawBorders(Graphics graphics) {
-    graphics.setColor(Color.GRAY);
+    graphics.setColor(grayColor);
     // Column lines:
     for (int x=border; x<actualWide; x+=(dashWide+cardWide)){
       int yStart=border+dashWide;
