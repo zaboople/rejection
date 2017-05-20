@@ -13,7 +13,7 @@ public class Boot {
     if (!setup.go(args))
       System.exit(1);
     if (setup.gui)
-      ScreenPlay.boot(setup.config, setup.gamble);
+      ScreenPlay.boot(setup, setup.gamble);
     else
       new ConsolePlay(setup.config, setup.gamble).play();
 

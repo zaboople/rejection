@@ -3,10 +3,11 @@ import java.io.File;
 import java.io.FileInputStream;
 
 /** Acts as the command-line setup system. */
-class GameConfigSetup {
+public class GameConfigSetup {
   public GameConfig config;
   public Gamble gamble;
   public boolean gui=true;
+  public boolean guiFullScreen=true;
 
   private static boolean help(String error) {
     if (error!=null) System.out.println("Error: "+error);
@@ -17,7 +18,9 @@ class GameConfigSetup {
       "  --gui    \n"+
       "  --ascii  GUI mode (default) is better, even though it doesn't \n"+
       "           try that hard to be \"graphical\". \n"+
-      "           Hidden feature: Command/Ctrl-W will exit anytime. \n"
+      "           Hidden feature: Command/Ctrl-W will exit anytime. \n"+
+      "  --full-screen-off\n"+
+      "           Turns off full-screen mode when using --gui.\n"
     );
     return error==null;
   }
@@ -31,6 +34,9 @@ class GameConfigSetup {
       else
       if (args[i].equals("-g") || args[i].equals("--gui"))
         gui=true;
+      else
+      if (args[i].equals("-f") || args[i].equals("--full-screen-off"))
+        guiFullScreen=false;
       else
       if (args[i].equals("-a") || args[i].equals("--ascii"))
         gui=false;

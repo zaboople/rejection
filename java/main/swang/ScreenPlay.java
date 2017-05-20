@@ -1,5 +1,6 @@
 package main.swang;
 import main.GameConfig;
+import main.GameConfigSetup;
 import main.Gamble;
 import main.Game;
 import main.GameState;
@@ -16,8 +17,8 @@ public class ScreenPlay implements ScreenPlayInterface {
    * not configurable, so it's usually set to true unless I was messing
    * around and forgot.
    */
-  public static void boot(GameConfig config, Gamble gamble) throws Exception {
-    Screen.startup(new ScreenPlay(config, gamble), false);
+  public static void boot(GameConfigSetup setup, Gamble gamble) throws Exception {
+    Screen.startup(new ScreenPlay(setup.config, gamble), setup.guiFullScreen);
   }
 
   private final GameConfig config;
