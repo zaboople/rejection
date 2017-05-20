@@ -25,35 +25,27 @@ public class Board implements BoardView { //Fixme use Override keyword
   private int startPos, finishPos;
   private final SecureRandom randomizer;
 
-  public Board(SecureRandom randomizer, int width, int height) {
+  public Board(SecureRandom randomizer, int width, int height, int keyCount, int bonusCount) {
     this.randomizer=randomizer;
     this.width=width;
     this.height=height;
+
+    // Create cells:
     this.cells=new Cell[width * height];
     for (int i=0; i<cells.length; i++) this.cells[i]=new Cell();
-  }
-  public Board reset(int keyCount, int bonusCount) {
+
+    // Randomize start/finish/keys/bonuses:
     RandomNoRepeat random=new RandomNoRepeat(randomizer, cells.length-2);
-    reset(
-      random.next(),
-      random.next(),
-      random.fill(keyCount),
-      random.fill(bonusCount)
-    );
-    return this;
-  }
-  public Board reset(int start, int finish, int[] keys, int[] bonuses) {
-    for (int i=0; i<cells.length; i++)
-      this.cells[i].clear();
-    prev=-1;
-    current=-1;
+    int start=random.next(), finish=random.next();
+    int[] keys=random.fill(keyCount), bonuses=random.fill(bonusCount);
+
+    // Initialize the rest of our state:
     this.startPos=start;
     this.finishPos=finish;
     getCell(startPos).setUsed();
     getCell(finishPos).setUsed();
     setKeys(keys);
     setBonus(bonuses);
-    return this;
   }
 
   ////////////////////////////////////////
