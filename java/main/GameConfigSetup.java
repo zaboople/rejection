@@ -13,14 +13,14 @@ public class GameConfigSetup {
     if (error!=null) System.out.println("\nError: "+error);
     System.out.println(
       "\n"+
-      "Usage: [--config <file>] [--wager <amount>] [--gui|--ascii] [--full-screen-off] [--help]\n"+
+      "Usage: [--config <file>] [--wager <amount>] [--gui|--ascii] [--full-screen <yes|no>] [--help]\n"+
       "  --config Use a configuration <file>. Look in sample-configs.\n"+
       "  --wager  Enable betting. The <amount> is your total wager; bet some of this each round.\n"+
       "  --gui    \n"+
       "  --ascii  GUI mode (default) is better, even though it doesn't try that hard to be \"graphical\".\n"+
       "           Hidden feature: Command/Ctrl-W will exit anytime. \n"+
-      "  --full-screen-off\n"+
-      "           Turns off full-screen mode when using --gui.\n"+
+      "  --full-screen <yes|no> \n"+
+      "           Turns on (default) or off full-screen mode when using --gui.\n"+
       "  --help   Show this help screen\n"
     );
     return error==null;
@@ -36,8 +36,13 @@ public class GameConfigSetup {
       if (args[i].equals("-g") || args[i].equals("--gui"))
         gui=true;
       else
-      if (args[i].equals("-f") || args[i].equals("--full-screen-off"))
-        guiFullScreen=false;
+      if (args[i].equals("-f") || args[i].equals("--full-screen")){
+        i++;
+        if (i==args.length)
+          return help("Expected a yes/no value for \"--full-screen\"");
+        String yn=args[i].toLowerCase();
+        guiFullScreen=yn.startsWith("y") || yn.startsWith("t");
+      }
       else
       if (args[i].equals("-a") || args[i].equals("--ascii"))
         gui=false;
