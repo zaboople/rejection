@@ -9,7 +9,7 @@ import java.util.function.Supplier;
  * Represents Board state; makes very little effort to enforce
  * game rules. Exposed as public only for testing.
  */
-public class Board implements BoardView { //Fixme use Override keyword
+public class Board implements BoardView {
 
   /////////////////////
   // INITIALIZATION: //
@@ -17,16 +17,13 @@ public class Board implements BoardView { //Fixme use Override keyword
 
   private final Cell[] cells;
   private final int width, height;
+  private final int startPos, finishPos;
 
+  // State is this simple, really... well, watch out for Cell:
   private int prev=-1;
   private int current=-1;
-  private int[] keyCells;
-  private int[] bonusCells;
-  private int startPos, finishPos;
-  private final SecureRandom randomizer;
 
   public Board(SecureRandom randomizer, int width, int height, int keyCount, int bonusCount) {
-    this.randomizer=randomizer;
     this.width=width;
     this.height=height;
 
@@ -44,8 +41,16 @@ public class Board implements BoardView { //Fixme use Override keyword
     this.finishPos=finish;
     getCell(startPos).setUsed();
     getCell(finishPos).setUsed();
-    setKeys(keys);
-    setBonus(bonuses);
+    reserve(Cell::setKey, keys);
+    reserve(Cell::setBonus, bonuses);
+  }
+
+  private void reserve(java.util.function.Consumer<Cell> cellFunction, int... cellIndices) {
+    for (int index: cellIndices)
+      if (!cells[index].isEmpty())
+        throw new IllegalStateException("Cell is already used "+cells[index]);
+      else
+        cellFunction.accept(cells[index]);
   }
 
   ////////////////////////////////////////
@@ -54,10 +59,8 @@ public class Board implements BoardView { //Fixme use Override keyword
 
   public @Override int getWidth() {return width;}
   public @Override int getHeight() {return height;}
+  public @Override Cell getCell(int i) {return cells[i];}
   public @Override Cell getCell(int row, int col) {return getCell(toIndex(row, col));}
-  public @Override Card getCard(int row, int col) {
-    return getCard(toIndex(row, col));
-  }
   public @Override boolean isStart(int row, int col) {
     return toIndex(row, col)==startPos;
   }
@@ -67,14 +70,16 @@ public class Board implements BoardView { //Fixme use Override keyword
   public @Override boolean onFinish() {
     return current==finishPos;
   }
+  public @Override int getCellIndex(int row, int col) {
+    return toIndex(row, col);
+  }
 
-  public Cell getCell(int i) {return cells[i];}
-  public int getCellCount() {return cells.length;}
-  public Card getCard(int index) {
+  int getCellCount() {return cells.length;}
+  Card getCard(int index) {
     return getCell(index).getCard();
   }
 
-  public int getDistanceTo(int index) {
+  int getDistanceTo(int index) {
     int currRow=getCurrentRow();
     int currCol=getCurrentCol();
     int toRow=index / width;
@@ -82,9 +87,9 @@ public class Board implements BoardView { //Fixme use Override keyword
     return Math.abs(toRow-currRow) + Math.abs(toCol-currCol);
   }
 
-  public boolean onKey() {return cells[current].isKey();}
-  public boolean onBonus() {return cells[current].isBonus();}
-  public boolean hasCurrent() {
+  boolean onKey() {return cells[current].isKey();}
+  boolean onBonus() {return cells[current].isBonus();}
+  boolean hasCurrent() {
     return current!=-1;
   }
 
@@ -134,12 +139,12 @@ public class Board implements BoardView { //Fixme use Override keyword
     current=startPos;
   }
   public void play(Card card, final byte direction) {
+    prev=current;
     int target=getTarget(current, direction);
     if (target<0)
       throw new IllegalStateException("Not a legal card placement");;
     card=getOptimalRotation(card, target, direction);
     setCard(target, card);
-    prev=current;
     current=target;
   }
   public byte switchPlay() {
@@ -217,26 +222,6 @@ public class Board implements BoardView { //Fixme use Override keyword
     return -1;
   }
 
-  /////////////////////////////
-  // PRIVATE INITIALIZATION: //
-  /////////////////////////////
-
-  private void setKeys(int... cellIndices) {
-    keyCells=cellIndices;
-    reserve(Cell::setKey, cellIndices);
-  }
-  private void setBonus(int... cellIndices) {
-    bonusCells=cellIndices;
-    reserve(Cell::setBonus, cellIndices);
-  }
-  private void reserve(java.util.function.Consumer<Cell> cellFunction, int... cellIndices) {
-    for (int index: cellIndices)
-      if (!cells[index].isEmpty())
-        throw new IllegalStateException("Cell is already used "+cells[index]);
-      else
-        cellFunction.accept(cells[index]);
-  }
-
   ///////////////////////////
   // OTHER PRIVATE THINGS: //
   ///////////////////////////
@@ -262,6 +247,7 @@ public class Board implements BoardView { //Fixme use Override keyword
     return setCard(current, card);
   }
   private Board setCard(int index, Card card) {
+    cells[index].setPrevious(card==null ?-1 :prev);
     cells[index].setCard(card);
     return this;
   }

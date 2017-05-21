@@ -9,9 +9,10 @@ import java.awt.RenderingHints;
 import java.awt.geom.Rectangle2D;
 import java.awt.font.LineMetrics;
 import javax.swing.JPanel;
-import main.Card;
 import main.BoardView;
+import main.Card;
 import main.Cell;
+import main.Dir;
 
 public class CardPanel extends JPanel {
 
@@ -30,11 +31,21 @@ public class CardPanel extends JPanel {
   private int rows=2, cols=2;
   private int currHeight=-1, currWidth=-1;
   private int
-    dashWide, wDashLen, vDashLen,
+
+    // Really "dash-thick", plus precalculated double/triple/quadruple:
+    dashWide, dashWide2, dashWide3, dashWide4,
+
+    // Length of dash vertically/horizontally, which are different, yes:
+    wDashLen, vDashLen,
+
+    // Meh:
     border, cardWide, cardHigh,
     actualWide, actualHigh, gapLen,
+
+    // Path variables:
     vPathLeftOff, vPathHighWithSymbol, vPathHighWithoutSymbol, vPathDownTopOffWithSymbol,
-    hPathTopOff, hPathWideWithSymbol, hPathWideWithoutSymbol, hPathRightOffWithSymbol;
+    hPathTopOff, hPathWideWithSymbol, hPathWideWithoutSymbol, hPathRightOffWithSymbol
+    ;
 
   private final short fontIndexKey=0, fontIndexBonus=1, fontIndexStart=2, fontIndexFinish=3;
   private final Dimension[] fontOffsets={null, null, null, null};
@@ -150,7 +161,12 @@ public class CardPanel extends JPanel {
     for (int r=0; r<rows; r++){
       int left=border+dashWide;
       for (int c=0; c<cols; c++) {
-        Cell cell=board.getCell(r, c);
+        final int cellIndex=board.getCellIndex(r, c);
+        final Cell cell=board.getCell(cellIndex);
+        final int cellIndexFrom=cell.getPrevious();
+
+
+        // Draw symbol:
         boolean hasSymbol=true;
         if (cell.isKey())
           drawCenterSymbol(graphics, Color.GREEN, left, top, fontOffsets[fontIndexKey], "K");
@@ -165,9 +181,15 @@ public class CardPanel extends JPanel {
           drawCenterSymbol(graphics, Color.MAGENTA, left, top, fontOffsets[fontIndexFinish], "F");
         else
           hasSymbol=false;
-        Card card=board.getCard(r, c);
+
+
+        // Draw paths & connections:
+        Card card=cell.getCard();
         if (card!=null) {
+
           graphics.setColor(Color.WHITE);
+
+          // Draw basic paths:
           int
             vPathHigh=hasSymbol ?vPathHighWithSymbol :vPathHighWithoutSymbol,
             hPathWide=hasSymbol ?hPathWideWithSymbol :hPathWideWithoutSymbol;
@@ -183,12 +205,41 @@ public class CardPanel extends JPanel {
             int pathLeft=hasSymbol ?left+hPathRightOffWithSymbol :left+hPathWideWithoutSymbol;
             graphics.fillRect(pathLeft, top+hPathTopOff, hPathWide, dashWide);
           }
+
+          // Connecting points:
+          byte dirFrom=0;
+          if (cellIndexFrom>0) {
+            if (cellIndexFrom==cellIndex+1) dirFrom=Dir.RIGHT;
+            else
+            if (cellIndexFrom==cellIndex-1) dirFrom=Dir.LEFT;
+            else
+            if (cellIndexFrom==cellIndex-cols) dirFrom=Dir.UP;
+            else
+            if (cellIndexFrom==cellIndex+cols) dirFrom=Dir.DOWN;
+            else
+            if (dirFrom==0) throw new RuntimeException("What?");
+          }
+          if (dirFrom!=0) {
+            if (dirFrom==Dir.LEFT)
+              graphics.fillRect(left-dashWide2, top+hPathTopOff, dashWide3, dashWide);
+            else
+            if (dirFrom==Dir.RIGHT)
+              graphics.fillRect(left+cardWide-dashWide2, top+hPathTopOff, dashWide4, dashWide);
+            else
+            if (dirFrom==Dir.UP)
+              graphics.fillRect(left+vPathLeftOff, top-dashWide2, dashWide, dashWide3);
+            else
+            if (dirFrom==Dir.DOWN)
+              graphics.fillRect(left+vPathLeftOff, top+cardHigh-dashWide2, dashWide, dashWide4);
+            else
+              System.out.println(dirFrom);
+          }
         }
         left+=cardWide+dashWide;
       }
       top+=cardHigh+dashWide;
     }
-  }
+  } // drawCardsAndSymbols()
 
   private void drawCenterSymbol(
       Graphics graphics, Color color, int left, int top, Dimension offsets, String achar
@@ -218,6 +269,9 @@ public class CardPanel extends JPanel {
     if (dashWide==0) dashWide=1;
     else if (dashWide>3) dashWide=3;
     border=dashWide;
+    dashWide2=2*dashWide;
+    dashWide3=3*dashWide;
+    dashWide4=4*dashWide;
     int highExtra=(border*2)+((rows+1)*dashWide);
     int wideExtra=(border*2)+((cols+1)*dashWide);
 
@@ -283,15 +337,6 @@ public class CardPanel extends JPanel {
     fontOffsets[fontIndexStart]=recomputeTextOffset(metrics, "S");
     fontOffsets[fontIndexFinish]=recomputeTextOffset(metrics, "F");
     recomputePathOffsets();
-    /*
-      System.out.print(
-        "["+
-        fontOffsets[fontIndexBonus].width+","+
-        fontOffsets[fontIndexKey].width+","+
-        fontOffsets[fontIndexStart].width+","+
-        fontOffsets[fontIndexFinish].width+"]"
-      );
-    */
   }
   private Dimension recomputeTextOffset(FontMetrics metrics, String center) {
     //Subtract? Add? Note: For offLeft, we get the proper left; but for offTop, we have this problem
