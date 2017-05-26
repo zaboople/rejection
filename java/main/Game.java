@@ -85,11 +85,6 @@ public class Game {
     }
   }
 
-  public void playUp() {play(Dir.UP);}
-  public void playDown() {play(Dir.DOWN);}
-  public void playLeft() {play(Dir.LEFT);}
-  public void playRight() {play(Dir.RIGHT);}
-
   public void rotateCard() {
     state.require(CARD_PLACED);
     board.rotateCard();
