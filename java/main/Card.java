@@ -112,8 +112,9 @@ public final class Card {
    *   card's outgoing paths to point to as many as of these as possible, and not point to "dead" areas.
    * @param cameFrom This is the direction we played from, so the card must have a path pointing this way. It is optionally
    *   zero, however, meaning that it's the first card played on the board.
+   * @param previousCard This is the last card played; for tees, we want to match the rotation if it scores well.
    */
-  public Card getOptimalRotationFor(byte canPlayTo, byte cameFrom) {
+  public Card getOptimalRotationFor(byte canPlayTo, byte cameFrom, Card previousCard) {
     boolean[] counter={false, false, false, false};
     if (pathType==CROSS) return this;
     if (pathType==BAR) {
@@ -123,9 +124,9 @@ public final class Card {
         ?other
         :this;
     }
-    Card bestCard=this;
     int bestCount=this.intersectCount(canPlayTo, cameFrom);
-    Card nextCard=this;
+    Card bestCard=this,
+         nextCard=this;
     for (int i=0; i<3; i++) {
       nextCard=nextCard.rotate();
       int count=nextCard.intersectCount(canPlayTo, cameFrom);
@@ -133,6 +134,9 @@ public final class Card {
         bestCard=nextCard;
         bestCount=count;
       }
+      else
+      if (count==bestCount && pathType==TEE && previousCard!=null && previousCard.rotation==nextCard.rotation)
+        bestCard=nextCard;
     }
     return bestCard;
   }

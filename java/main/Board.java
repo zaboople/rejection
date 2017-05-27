@@ -134,7 +134,7 @@ public class Board implements BoardView {
     setCard(newCard);
   }
   public void playFirstCard(Card card) {
-    card=card.getOptimalRotationFor(whereCanIPlayToFrom(startPos), (byte)0);
+    card=card.getOptimalRotationFor(whereCanIPlayToFrom(startPos), (byte)0, null);
     setCard(startPos, card);
     current=startPos;
   }
@@ -142,8 +142,8 @@ public class Board implements BoardView {
     prev=current;
     int target=getTarget(current, direction);
     if (target<0)
-      throw new IllegalStateException("Not a legal card placement");;
-    card=getOptimalRotation(card, target, direction);
+      throw new IllegalStateException("Not a legal card placement");
+    card=getOptimalRotation(card, target, direction, prev==-1 ?null :getCard(prev));
     setCard(target, card);
     current=target;
   }
@@ -166,9 +166,9 @@ public class Board implements BoardView {
   // PRIVATE GAME PLAY: //
   ////////////////////////
 
-  private Card getOptimalRotation(Card card, int target, byte direction) {
+  private Card getOptimalRotation(Card card, int target, byte direction, Card prevCard) {
     return card.getOptimalRotationFor(
-      whereCanIPlayToFrom(target), Dir.OPPOSITES[direction]
+      whereCanIPlayToFrom(target), Dir.OPPOSITES[direction], prevCard
     );
   }
   private byte canPlayTo(int fromPosition, byte direction) {
@@ -212,7 +212,7 @@ public class Board implements BoardView {
     for (byte direction: toTry) {
       int target=getTarget(prev, direction);
       if (target > -1) {
-        card=getOptimalRotation(card, target, direction);
+        card=getOptimalRotation(card, target, direction, prev==-1 ?null :getCard(prev));
         setCard(target, card);
         setCard(current, null);
         current=target;

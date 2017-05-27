@@ -20,7 +20,7 @@ public class RotationTest {
     for (byte d: toDirs) toDirNames+=Dir.DIR_TO_NAME[d];
     System.out.println(
       "FROM "+Dir.DIR_TO_NAME[from]+" TO "+toDirNames+": " +
-      card.getOptimalRotationFor(getDirs(toDirs), from)
+      card.getOptimalRotationFor(getDirs(toDirs), from, null)
     );
   }
 
