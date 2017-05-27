@@ -53,9 +53,9 @@ public class Board implements BoardView {
         cellFunction.accept(cells[index]);
   }
 
-  ////////////////////////////////////////
-  // PUBLIC GAME PLAY, READ-ONLY STATE: //
-  ////////////////////////////////////////
+  ////////////////////////////////////
+  // BoardView read-only overrides: //
+  ////////////////////////////////////
 
   public @Override int getWidth() {return width;}
   public @Override int getHeight() {return height;}
@@ -73,6 +73,10 @@ public class Board implements BoardView {
   public @Override int getCellIndex(int row, int col) {
     return toIndex(row, col);
   }
+
+  /////////////////////////////////////////////////////////////
+  // Package-private logic, for the Game class and/or tests: //
+  /////////////////////////////////////////////////////////////
 
   int getCellCount() {return cells.length;}
   Card getCard(int index) {
@@ -93,26 +97,14 @@ public class Board implements BoardView {
     return current!=-1;
   }
 
-  public boolean canPlay(byte direction) {
+  boolean canPlay(byte direction) {
     return getTarget(current, direction) > 0;
   }
-  public byte whereCanIPlayTo() {
+  byte whereCanIPlayTo() {
     return whereCanIPlayToFrom(current);
   }
-  public byte whereCanIPlayToFrom(int fromPos) {
-    return (byte) (
-      canPlayTo(fromPos, Dir.LEFT) |
-      canPlayTo(fromPos, Dir.RIGHT)|
-      canPlayTo(fromPos, Dir.UP)   |
-      canPlayTo(fromPos, Dir.DOWN)
-    );
-  }
 
-  ////////////////////////////////////////
-  // PUBLIC GAME PLAY STATE MANAGEMENT: //
-  ////////////////////////////////////////
-
-  public void rotateCard() {
+  void rotateCard() {
     Card nowCard=getCurrentCard();
     Card newCard=nowCard.rotate();
     if (prev==-1){
@@ -133,21 +125,14 @@ public class Board implements BoardView {
       throw new IllegalStateException("Previous card "+prev+" doesn't seem to align to new "+current);
     setCard(newCard);
   }
-  public void playFirstCard(Card card) {
+
+  void playFirstCard(Card card) {
     card=card.getOptimalRotationFor(whereCanIPlayToFrom(startPos), (byte)0, null);
     setCard(startPos, card);
     current=startPos;
   }
-  public void play(Card card, final byte direction) {
-    prev=current;
-    int target=getTarget(current, direction);
-    if (target<0)
-      throw new IllegalStateException("Not a legal card placement");
-    card=getOptimalRotation(card, target, direction, prev==-1 ?null :getCard(prev));
-    setCard(target, card);
-    current=target;
-  }
-  public byte switchPlay() {
+
+  byte switchPlay() {
     if (current==startPos)
       return -1;
     byte[] toTry;
@@ -162,6 +147,17 @@ public class Board implements BoardView {
     throw new IllegalStateException("Current / prev mismatch "+current+" "+prev);
   }
 
+  /** Only public because of residual test in another package */
+  public void play(Card card, final byte direction) {
+    prev=current;
+    int target=getTarget(current, direction);
+    if (target<0)
+      throw new IllegalStateException("Not a legal card placement");
+    card=getOptimalRotation(card, target, direction, prev==-1 ?null :getCard(prev));
+    setCard(target, card);
+    current=target;
+  }
+
   ////////////////////////
   // PRIVATE GAME PLAY: //
   ////////////////////////
@@ -169,6 +165,14 @@ public class Board implements BoardView {
   private Card getOptimalRotation(Card card, int target, byte direction, Card prevCard) {
     return card.getOptimalRotationFor(
       whereCanIPlayToFrom(target), Dir.OPPOSITES[direction], prevCard
+    );
+  }
+  private byte whereCanIPlayToFrom(int fromPos) {
+    return (byte) (
+      canPlayTo(fromPos, Dir.LEFT) |
+      canPlayTo(fromPos, Dir.RIGHT)|
+      canPlayTo(fromPos, Dir.UP)   |
+      canPlayTo(fromPos, Dir.DOWN)
     );
   }
   private byte canPlayTo(int fromPosition, byte direction) {
