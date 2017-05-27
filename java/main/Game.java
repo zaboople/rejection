@@ -164,7 +164,7 @@ public class Game {
 
   private void playNextTo(byte direction) {
     state.require(CARD_UP);
-    board.play(upCard, direction);
+    board.playCard(upCard, direction);
     prevDirection=direction;
     setPlaced();
   }

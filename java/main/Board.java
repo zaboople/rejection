@@ -83,6 +83,10 @@ public class Board implements BoardView {
     return getCell(index).getCard();
   }
 
+  Card getCurrentCard() {
+    return current==-1 ?null :getCell(current).getCard();
+  }
+
   int getDistanceTo(int index) {
     int currRow=getCurrentRow();
     int currCol=getCurrentCol();
@@ -148,7 +152,7 @@ public class Board implements BoardView {
   }
 
   /** Only public because of residual test in another package */
-  public void play(Card card, final byte direction) {
+  public void playCard(Card card, final byte direction) {
     prev=current;
     int target=getTarget(current, direction);
     if (target<0)
@@ -238,9 +242,6 @@ public class Board implements BoardView {
   }
   private int getCurrentCol() {
     return current % width;
-  }
-  private Card getCurrentCard() {
-    return getCard(current);
   }
 
   /** This is only exposed for testing. */

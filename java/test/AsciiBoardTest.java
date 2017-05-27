@@ -10,8 +10,8 @@ public class AsciiBoardTest {
   public static void main(String[] args) throws Exception {
     Board board=new Board(new SecureRandom(), 5, 5, 1, 1);
     board.setCard(0, 0, Card.pathBar());
-    board.play(Card.pathCorner(), Dir.RIGHT);
-    board.play(Card.pathCorner().rotate().rotate(), Dir.DOWN);
+    board.playCard(Card.pathCorner(), Dir.RIGHT);
+    board.playCard(Card.pathCorner().rotate().rotate(), Dir.DOWN);
     new AsciiBoard(System.out, true).draw(board, System.out);
     System.out.flush();
   }
