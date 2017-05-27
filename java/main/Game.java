@@ -67,15 +67,15 @@ public class Game {
     state.require(CARD_UP);
     if (board.hasCurrent()) {
       byte options=board.whereCanIPlayTo();
-      if (prevDirection > 0 && (options & prevDirection)!=0) play(prevDirection);
+      if (prevDirection > 0 && (options & prevDirection)!=0) playNextTo(prevDirection);
       else
-      if ((options & Dir.RIGHT)!=0) play(Dir.RIGHT);
+      if ((options & Dir.RIGHT)!=0) playNextTo(Dir.RIGHT);
       else
-      if ((options & Dir.DOWN)!=0) play(Dir.DOWN);
+      if ((options & Dir.DOWN)!=0) playNextTo(Dir.DOWN);
       else
-      if ((options & Dir.UP)!=0) play(Dir.UP);
+      if ((options & Dir.UP)!=0) playNextTo(Dir.UP);
       else
-      if ((options & Dir.LEFT)!=0) play(Dir.LEFT);
+      if ((options & Dir.LEFT)!=0) playNextTo(Dir.LEFT);
       else
         throw new IllegalStateException("Invalid play options: "+options);
     }
@@ -162,7 +162,7 @@ public class Game {
   // PRIVATE: //
   //////////////
 
-  private void play(byte direction) {
+  private void playNextTo(byte direction) {
     state.require(CARD_UP);
     board.play(upCard, direction);
     prevDirection=direction;
