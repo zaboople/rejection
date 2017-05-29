@@ -385,7 +385,7 @@ public class Screen {
    * Called by our window event handler, in which case we get invoked before rendering,
    * so we don't have to issue a repaint(). However, this also gets called (via lambda originally
    * passed to CardPanel constructor) by CardPanel when *it* handles resize as a "paint" event,
-   * and we often calling back & telling it to repaint() *again*.
+   * and we often call it back via repaint() to repeat itself!
    *
    * Refer to CardPanel.paintComponent() for a little more information.
    */
