@@ -71,6 +71,7 @@ public class Screen {
   private JTextField jtfBet, jtfMove;
   private JPanel pnlPlay, pnlBet, pnlAlert;
   private CurrentOS currentOS;
+  private int rowCount=0;
 
   private Screen(ScreenPlayInterface watcher, boolean fullScreen) {
     this.watcher=watcher;
@@ -92,6 +93,7 @@ public class Screen {
 
   void setBoard(BoardView board)  {
     cardPanel.setBoard(board);
+    rowCount=board==null ?0 :board.getHeight();
   }
   void setStateBet(int available) {
     lblEnterBet1.setText(String.format("Enter bet for this round, limit $%d:", available));
@@ -222,7 +224,7 @@ public class Screen {
     blackLabelFont=createLabelFont(blackLabelFontSize);
     cardFont=createCardFont(cardFontSize);
 
-    cardPanel=new CardPanel();
+    cardPanel=new CardPanel(this::handleResizeWindow);
     cardPanel.setFont(cardFont);
 
     pnlPlay=newBlackPanel();
@@ -379,7 +381,14 @@ public class Screen {
     return keyCode==KeyEvent.VK_ENTER || !"".equals(entryBox.getText());
   }
 
-  /** This seems to get invoked before rendering, so we don't have to issue a repaint() */
+  /**
+   * Called by our window event handler, in which case we get invoked before rendering,
+   * so we don't have to issue a repaint(). However, this also gets called (via lambda originally
+   * passed to CardPanel constructor) by CardPanel when *it* handles resize as a "paint" event,
+   * and we often calling back & telling it to repaint() *again*.
+   *
+   * Refer to CardPanel.paintComponent() for a little more information.
+   */
   private void handleResizeWindow() {
 
     // 1. Label font:
@@ -395,13 +404,12 @@ public class Screen {
           comp.setFont(font);
         for (JComponent comp: allNothings)
           comp.setFont(font);
-        cardPanel.setFont(font);
       }
     }
 
     // 2. Card panel font:
-    {
-      int fontSize=win.getHeight() / 48;
+    if (cardPanel!=null && rowCount > 0) {
+      int fontSize=cardPanel.getActualHeight() / (rowCount * 3);
       if (fontSize==0) fontSize=1;
       else
       if (fontSize>18) fontSize=18;
@@ -409,6 +417,7 @@ public class Screen {
       if (!font.equals(cardFont)){
         cardFont=font;
         cardPanel.setFont(font);
+        cardPanel.repaint();
       }
     }
 

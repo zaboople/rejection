@@ -87,6 +87,7 @@ public class Board implements BoardView {
     return current==-1 ?null :getCell(current).getCard();
   }
 
+  /** Not used */
   int getDistanceTo(int index) {
     int currRow=getCurrentRow();
     int currCol=getCurrentCol();
@@ -136,6 +137,10 @@ public class Board implements BoardView {
     current=startPos;
   }
 
+  /**
+   * When the user wants to swap the current-not-committed card to the next available
+   * spot, call this.
+   */
   byte switchPlay() {
     if (current==startPos)
       return -1;
@@ -151,13 +156,18 @@ public class Board implements BoardView {
     throw new IllegalStateException("Current / prev mismatch "+current+" "+prev);
   }
 
-  /** Only public because of residual test in another package */
-  public void playCard(Card card, final byte direction) {
+  /**
+   * Only public because of residual test in another package
+   * @param card The card to play
+   * @param direction The direction to play the card, starting from the current card's position.
+   * @param prevCard A previous card to match the new card's rotation to, if possible.
+   */
+  public void playCard(Card card, final byte direction, Card prevCard) {
     prev=current;
     int target=getTarget(current, direction);
     if (target<0)
       throw new IllegalStateException("Not a legal card placement");
-    card=getOptimalRotation(card, target, direction, prev==-1 ?null :getCard(prev));
+    card=getOptimalRotation(card, target, direction, prevCard);
     setCard(target, card);
     current=target;
   }
@@ -220,7 +230,7 @@ public class Board implements BoardView {
     for (byte direction: toTry) {
       int target=getTarget(prev, direction);
       if (target > -1) {
-        card=getOptimalRotation(card, target, direction, prev==-1 ?null :getCard(prev));
+        card=getOptimalRotation(card, target, direction, null);
         setCard(target, card);
         setCard(current, null);
         current=target;

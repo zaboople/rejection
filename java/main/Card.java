@@ -20,8 +20,9 @@ public final class Card {
     return new Card(false, CROSS, Dir.LEFT);
   }
 
-  // The hasRight... hasDown booleans are "effectively" final,
-  // it's just more convenient to leave that out:
+  // The hasRight... hasDown booleans are "effectively" final;
+  // it's just more convenient to leave that out. Also, they must
+  // agree with the rotation byte, which is the true source of truth.
   private final boolean strike;
   private final int pathType;
   private final byte rotation;
@@ -85,6 +86,9 @@ public final class Card {
   public boolean hasPathLeft() {return hasLeft;}
   public boolean hasPathUp() {return hasUp;}
   public boolean hasPathDown() {return hasDown;}
+  public boolean sameRotation(Card other) {
+    return this.rotation==other.rotation;
+  }
 
   public boolean hasPath(byte direction) {
     switch (direction) {

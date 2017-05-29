@@ -30,7 +30,11 @@ public class Game {
   private GameState state;
   private byte prevDirection;
   private Card upCard=null;
-  private int moves=0; //Not really used
+  private int moves=0; //Not used
+  // Tees are annoying, so...
+  private Card prevTee=null;
+
+
 
   public Game(GameConfig c) {
     this.config=c;
@@ -43,7 +47,7 @@ public class Game {
   }
 
   /**
-   * Exposes a read-only BoardView for rendering.
+   * Exposes a read-only-dumbed-down version of Board for rendering.
    */
   public BoardView getBoard() {
     return board;
@@ -96,6 +100,11 @@ public class Game {
   public void finishPlayCard() {
     state.require(CARD_PLACED);
     moves++;
+
+    {
+      Card playedCard=board.getCurrentCard();
+      prevTee=playedCard!=null && playedCard.isPathTee() ?playedCard :prevTee;
+    }
 
     if (board.onKey())
       state.addKeysCrossed();
@@ -164,7 +173,7 @@ public class Game {
 
   private void playNextTo(byte direction) {
     state.require(CARD_UP);
-    board.playCard(upCard, direction);
+    board.playCard(upCard, direction, prevTee);
     prevDirection=direction;
     setPlaced();
   }

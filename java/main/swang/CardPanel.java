@@ -25,7 +25,14 @@ public class CardPanel extends JPanel {
   //                     //
   /////////////////////////
 
-  private final Color grayColor=new Color(50,50,50);
+  private final Color
+    grayColor=new Color(50,50,50),
+    keyColor=Color.GREEN,
+    bonusColor=Color.BLUE,
+    startColor=Color.MAGENTA,
+    finishColor=Color.MAGENTA;
+  private final Runnable resizeCallback;
+
   private BoardView board;
   private Font font;
   private int rows=2, cols=2;
@@ -62,6 +69,17 @@ public class CardPanel extends JPanel {
   //                 //
   /////////////////////
 
+
+  /**
+   * @param resizeCallback This is so Screen can find out the results
+   *     of our layout rearrangements. Refer to paintComponent() for
+   *     more details.
+   */
+  public CardPanel(Runnable resizeCallback) {
+    super();
+    this.resizeCallback=resizeCallback;
+  }
+
   public void setFont(Font font) {
     this.font=font;
     fontChanged=true;
@@ -91,6 +109,7 @@ public class CardPanel extends JPanel {
   ////////////////////////
 
   @Override public void paintComponent(Graphics graphics) {
+
     // Rudimentary initialization:
     super.paintComponent(graphics);
     final Dimension dim=getSize();
@@ -109,8 +128,13 @@ public class CardPanel extends JPanel {
     if (fontChanged || layoutChanged) {
       recomputeTextOffset(graphics);
       recomputePathOffsets();
+      fontChanged=false;
+      // Warning: This is really a callback to Screen, which may invoke repaint() back at
+      // us, which eventually/asynchronously gets turned into *another* paintComponent()
+      // call by Swing internals. However, this cycle should stabilize quickly since we
+      // maintain steady size while they adjust fonts to accommodate:
+      resizeCallback.run();
     }
-    fontChanged=false;
 
     // Draw stuff:
     drawBorders(graphics);
@@ -169,16 +193,16 @@ public class CardPanel extends JPanel {
         // Draw symbol:
         boolean hasSymbol=true;
         if (cell.isKey())
-          drawCenterSymbol(graphics, Color.GREEN, left, top, fontOffsets[fontIndexKey], "K");
+          drawCenterSymbol(graphics, keyColor, left, top, fontOffsets[fontIndexKey], "K");
         else
         if (cell.isBonus())
-          drawCenterSymbol(graphics, Color.BLUE, left, top, fontOffsets[fontIndexBonus], "B");
+          drawCenterSymbol(graphics, bonusColor, left, top, fontOffsets[fontIndexBonus], "B");
         else
         if (board.isStart(r, c))
-          drawCenterSymbol(graphics, Color.MAGENTA, left, top, fontOffsets[fontIndexStart], "S");
+          drawCenterSymbol(graphics, startColor, left, top, fontOffsets[fontIndexStart], "S");
         else
         if (board.isFinish(r, c))
-          drawCenterSymbol(graphics, Color.MAGENTA, left, top, fontOffsets[fontIndexFinish], "F");
+          drawCenterSymbol(graphics, finishColor, left, top, fontOffsets[fontIndexFinish], "F");
         else
           hasSymbol=false;
 
@@ -232,7 +256,7 @@ public class CardPanel extends JPanel {
             if (dirFrom==Dir.DOWN)
               graphics.fillRect(left+vPathLeftOff, top+cardHigh-dashWide2, dashWide, dashWide4);
             else
-              System.out.println(dirFrom);
+              throw new RuntimeException("Illegal direction: "+dirFrom);
           }
         }
         left+=cardWide+dashWide;
